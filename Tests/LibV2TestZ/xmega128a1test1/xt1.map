@@ -1,0 +1,43 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+glcd_data_address                                                 0x2800       2
+glcd_rs_address                                                   0x2802       2
+glcd_rs_bit_msk                                                   0x2804       1
+glcd_rw_address                                                   0x2805       2
+glcd_rw_bit_msk                                                   0x2807       1
+glcd_en_address                                                   0x2808       2
+glcd_en_bit_msk                                                   0x280A       1
+glcd_cs1_address                                                  0x280B       2
+glcd_cs1_bit_msk                                                  0x280D       1
+glcd_cs2_address                                                  0x280E       2
+glcd_cs2_bit_msk                                                  0x2810       1
+glcd_rst_address                                                  0x2811       2
+glcd_rst_bit_msk                                                  0x2813       1
+CaseAddress                                                       0x2814      66
+CaseStack                                                         0x2856      10
+GlcdColumn                                                        0x2860       1
+GlcdDataByte                                                      0x2861       1
+GlcdChar                                                          0x2862       1
+GlcdString                                                        0x2863       2
+GlcdFlashString                                                   0x2865       2
+GlcdFlashPointer                                                  0x2867       2
+i                                                                 0x2869       1
+j                                                                 0x286A       2
+InterruptCounter                                                  0x286C       2
+CTRLA_value                                                       0x286E       2
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+CaseAddressIndex                                                  R2,R3        2
+timer_interrupt_enable                                            R4,R5        2
+timer_interrupt_disable                                           R6,R7        2
+set_delay_7us                                                     R8,R9        2
+set_delay_10ms                                                    R10,R11      2
+StackPointer                                                      R13          1
+GlcdPage                                                          R12          1

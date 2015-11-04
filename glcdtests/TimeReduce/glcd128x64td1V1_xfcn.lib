@@ -1,0 +1,26 @@
+#include <xmega128a1.h>
+
+unsigned int CTRLA_value = 0x01;
+
+inline void timer_interrupt_enable (void)
+{
+  TCC0.CNT = 0x0000;
+  TCC0.CTRLA = 0x00;
+}
+
+inline void timer_interrupt_disable (void)
+{
+  TCC0.CTRLA = CTRLA_value;
+}
+
+inline void set_delay_7us (void)
+{
+  CTRLA_value = 0x01;
+  TCC0.PER=0x00DF;
+}
+
+inline void set_delay_10ms (void)
+{
+  CTRLA_value = 0x04;
+  TCC0.PER=0x9C3F;
+}

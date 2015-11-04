@@ -1,0 +1,6 @@
+normal delay:
+0x02032A2E
+timer delay:
+0x0231870D
+
+94.95096875 ms for 32Mhz xtal

@@ -1,0 +1,53 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+glcd_data_address                                                 0x3000       2
+glcd_rs_address                                                   0x3002       2
+glcd_rs_bit_msk                                                   0x3004       1
+glcd_rw_address                                                   0x3005       2
+glcd_rw_bit_msk                                                   0x3007       1
+glcd_en_address                                                   0x3008       2
+glcd_en_bit_msk                                                   0x300A       1
+glcd_cs1_address                                                  0x300B       2
+glcd_cs1_bit_msk                                                  0x300D       1
+glcd_cs2_address                                                  0x300E       2
+glcd_cs2_bit_msk                                                  0x3010       1
+glcd_rst_address                                                  0x3011       2
+glcd_rst_bit_msk                                                  0x3013       1
+function_stack                                                    0x3014      12
+function_status                                                   0x3020       6
+stack_pointer                                                     0x3026       1
+i_S101000D000                                                     0x3027       1
+i_S1010013001                                                     0x3028       1
+glcd_puts_page                                                    0x3029       1
+glcd_puts_str                                                     0x302A       2
+glcd_puts_center_page                                             0x302C       1
+glcd_puts_center_str                                              0x302D       2
+i_S1010017000                                                     0x302F       1
+glcd_putsf_column                                                 0x3030       1
+glcd_putsf_page                                                   0x3031       1
+glcd_putsf_str                                                    0x3032       2
+glcd_putsf_center_page                                            0x3034       1
+glcd_putsf_center_str                                             0x3035       2
+i_S101001D000                                                     0x3037       1
+j_S101001D000                                                     0x3038       1
+glcd_putbmp_bmp                                                   0x3039       2
+i_S101001F000                                                     0x303B       2
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+InterruptCounter                                                  R2,R3        2
+CTRLA_value                                                       R4,R5        2
+glcd_writebyte_clmn                                               R7           1
+glcd_writebyte_pg                                                 R6           1
+glcd_writebyte_data                                               R9           1
+glcd_clear_page_page                                              R8           1
+glcd_putchar_column                                               R11          1
+glcd_putchar_page                                                 R10          1
+glcd_putchar_ch                                                   R13          1
+glcd_puts_column                                                  R12          1

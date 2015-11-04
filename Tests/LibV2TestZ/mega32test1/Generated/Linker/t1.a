@@ -1,0 +1,4813 @@
+;/*****************************************************
+;This program was produced by the
+;CodeWizardAVR V2.05.0 Professional
+;Automatic Program Generator
+;© Copyright 1998-2010 Pavel Haiduc, HP InfoTech s.r.l.
+;http://www.hpinfotech.com
+;
+;Project :
+;Version :
+;Date    : 9/23/2011
+;Author  : NeVaDa
+;Company :
+;Comments:
+;
+;
+;Chip type               : ATmega16
+;Program type            : Application
+;AVR Core Clock frequency: 16.000000 MHz
+;Memory model            : Small
+;External RAM size       : 0
+;Data Stack size         : 512
+;*****************************************************/
+;
+;#include <mega16.h>
+;PCODE: $00000000 VOL: 0
+	#ifndef __SLEEP_DEFINED__
+;PCODE: $00000001 VOL: 0
+	#define __SLEEP_DEFINED__
+;PCODE: $00000002 VOL: 0
+	.EQU __se_bit=0x40
+;PCODE: $00000003 VOL: 0
+	.EQU __sm_mask=0xB0
+;PCODE: $00000004 VOL: 0
+	.EQU __sm_powerdown=0x20
+;PCODE: $00000005 VOL: 0
+	.EQU __sm_powersave=0x30
+;PCODE: $00000006 VOL: 0
+	.EQU __sm_standby=0xA0
+;PCODE: $00000007 VOL: 0
+	.EQU __sm_ext_standby=0xB0
+;PCODE: $00000008 VOL: 0
+	.EQU __sm_adc_noise_red=0x10
+;PCODE: $00000009 VOL: 0
+	.SET power_ctrl_reg=mcucr
+;PCODE: $0000000A VOL: 0
+	#endif
+;PCODE: $0000000B VOL: 0
+;PCODE: $0000000C VOL: 0
+;
+;// Alphanumeric LCD Module functions
+;#include <alcd.h>
+;
+;// C standard input/output
+;#include <stdio.h>
+;
+;
+;
+;
+;
+;
+;//#define Debugging
+;
+;#ifndef _ATXMEGA_DEVICE_
+;#include <iobits.h>
+;#endif
+;
+;// Global Variables
+;static unsigned char *glcd_data_address;
+;static unsigned char *glcd_rs_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_rs_bit_msk;
+;#else
+;static unsigned char glcd_rs_bit_pos;
+;#endif
+;static unsigned char *glcd_rw_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_rw_bit_msk;
+;#else
+;static unsigned char glcd_rw_bit_pos;
+;#endif
+;static unsigned char *glcd_en_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_en_bit_msk;
+;#else
+;static unsigned char glcd_en_bit_pos;
+;#endif
+;static unsigned char *glcd_cs1_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_cs1_bit_msk;
+;#else
+;static unsigned char glcd_cs1_bit_pos;
+;#endif
+;static unsigned char *glcd_cs2_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_cs2_bit_msk;
+;#else
+;static unsigned char glcd_cs2_bit_pos;
+;#endif
+;static unsigned char *glcd_rst_address;
+;#ifdef _ATXMEGA_DEVICE_
+;static unsigned char glcd_rst_bit_msk;
+;#else
+;static unsigned char glcd_rst_bit_pos;
+;#endif
+;
+;flash char glcd_font [91][6] =
+;{
+;    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // sp
+;    { 0x00, 0x00, 0x5F, 0x00, 0x00, 0x00 },   // !
+;    { 0x00, 0x00, 0x5F, 0x00, 0x00, 0x00 },   // "
+;    { 0x14, 0x7F, 0x14, 0x7F, 0x14, 0x00 },   // #
+;    { 0x24, 0x2A, 0x7F, 0x2A, 0x12, 0x00 },   // $
+;    { 0x23, 0x13, 0x08, 0x64, 0x62, 0x00 },   // %
+;    { 0x36, 0x49, 0x55, 0x22, 0x50, 0x00 },   // &
+;    { 0x00, 0x05, 0x03, 0x00, 0x00, 0x00 },   // '
+;    { 0x00, 0x1C, 0x22, 0x41, 0x00, 0x00 },   // (
+;    { 0x00, 0x41, 0x22, 0x1C, 0x00, 0x00 },   // )
+;    { 0x08, 0x2A, 0x1C, 0x2A, 0x08, 0x00 },   // *
+;    { 0x08, 0x08, 0x3E, 0x08, 0x08, 0x00 },   // +
+;    { 0x00, 0x50, 0x30, 0x00, 0x00, 0x00 },   // ,
+;    { 0x08, 0x08, 0x08, 0x08, 0x08, 0x00 },   // -
+;    { 0x00, 0x30, 0x30, 0x00, 0x00, 0x00 },   // .
+;    { 0x20, 0x10, 0x08, 0x04, 0x02, 0x00 },   // /
+;    { 0x3E, 0x51, 0x49, 0x45, 0x3E, 0x00 },   // 0
+;    { 0x00, 0x42, 0x7F, 0x40, 0x00, 0x00 },   // 1
+;    { 0x42, 0x61, 0x51, 0x49, 0x46, 0x00 },   // 2
+;    { 0x21, 0x41, 0x45, 0x4B, 0x31, 0x00 },   // 3
+;    { 0x18, 0x14, 0x12, 0x7F, 0x10, 0x00 },   // 4
+;    { 0x27, 0x45, 0x45, 0x45, 0x39, 0x00 },   // 5
+;    { 0x3C, 0x4A, 0x49, 0x49, 0x30, 0x00 },   // 6
+;    { 0x01, 0x71, 0x09, 0x05, 0x03, 0x00 },   // 7
+;    { 0x36, 0x49, 0x49, 0x49, 0x36, 0x00 },   // 8
+;    { 0x06, 0x49, 0x49, 0x29, 0x1E, 0x00 },   // 9
+;    { 0x00, 0x36, 0x36, 0x00, 0x00, 0x00 },   // :
+;    { 0x00, 0x56, 0x36, 0x00, 0x00, 0x00 },   // ;
+;    { 0x00, 0x08, 0x14, 0x22, 0x41, 0x00 },   // <
+;    { 0x14, 0x14, 0x14, 0x14, 0x14, 0x00 },   // =
+;    { 0x41, 0x22, 0x14, 0x08, 0x00, 0x00 },   // >
+;    { 0x02, 0x01, 0x51, 0x09, 0x06, 0x00 },   // ?
+;    { 0x32, 0x49, 0x79, 0x41, 0x3E, 0x00 },   // @
+;    { 0x7E, 0x11, 0x11, 0x11, 0x7E, 0x00 },   // A
+;    { 0x7F, 0x49, 0x49, 0x49, 0x36, 0x00 },   // B
+;    { 0x3E, 0x41, 0x41, 0x41, 0x22, 0x00 },   // C
+;    { 0x7F, 0x41, 0x41, 0x22, 0x1C, 0x00 },   // D
+;    { 0x7F, 0x49, 0x49, 0x49, 0x41, 0x00 },   // E
+;    { 0x7F, 0x09, 0x09, 0x01, 0x01, 0x00 },   // F
+;    { 0x3E, 0x41, 0x41, 0x51, 0x32, 0x00 },   // G
+;    { 0x7F, 0x08, 0x08, 0x08, 0x7F, 0x00 },   // H
+;    { 0x00, 0x41, 0x7F, 0x41, 0x00, 0x00 },   // I
+;    { 0x20, 0x40, 0x41, 0x3F, 0x01, 0x00 },   // J
+;    { 0x7F, 0x08, 0x14, 0x22, 0x41, 0x00 },   // K
+;    { 0x7F, 0x40, 0x40, 0x40, 0x40, 0x00 },   // L
+;    { 0x7F, 0x02, 0x04, 0x02, 0x7F, 0x00 },   // M
+;    { 0x7F, 0x04, 0x08, 0x10, 0x7F, 0x00 },   // N
+;    { 0x3E, 0x41, 0x41, 0x41, 0x3E, 0x00 },   // O
+;    { 0x7F, 0x09, 0x09, 0x09, 0x06, 0x00 },   // P
+;    { 0x3E, 0x41, 0x51, 0x21, 0x5E, 0x00 },   // Q
+;    { 0x7F, 0x09, 0x19, 0x29, 0x46, 0x00 },   // R
+;    { 0x46, 0x49, 0x49, 0x49, 0x31, 0x00 },   // S
+;    { 0x01, 0x01, 0x7F, 0x01, 0x01, 0x00 },   // T
+;    { 0x3F, 0x40, 0x40, 0x40, 0x3F, 0x00 },   // U
+;    { 0x1F, 0x20, 0x40, 0x20, 0x1F, 0x00 },   // V
+;    { 0x7F, 0x20, 0x18, 0x20, 0x7F, 0x00 },   // W
+;    { 0x63, 0x14, 0x08, 0x14, 0x63, 0x00 },   // X
+;    { 0x03, 0x04, 0x78, 0x04, 0x03, 0x00 },   // Y
+;    { 0x61, 0x51, 0x49, 0x45, 0x43, 0x00 },   // Z
+;    { 0x00, 0x00, 0x7F, 0x41, 0x41, 0x00 },   // [
+;    { 0x02, 0x04, 0x08, 0x10, 0x20, 0x00 },   // 55
+;    { 0x41, 0x41, 0x7F, 0x00, 0x00, 0x00 },   // ]
+;    { 0x04, 0x02, 0x01, 0x02, 0x04, 0x00 },   // ^
+;    { 0x40, 0x40, 0x40, 0x40, 0x40, 0x00 },   // _
+;    { 0x00, 0x01, 0x02, 0x04, 0x00, 0x00 },   // '
+;    { 0x20, 0x54, 0x54, 0x54, 0x78, 0x00 },   // a
+;    { 0x7F, 0x48, 0x44, 0x44, 0x38, 0x00 },   // b
+;    { 0x38, 0x44, 0x44, 0x44, 0x20, 0x00 },   // c
+;    { 0x38, 0x44, 0x44, 0x48, 0x7F, 0x00 },   // d
+;    { 0x38, 0x54, 0x54, 0x54, 0x18, 0x00 },   // e
+;    { 0x08, 0x7E, 0x09, 0x01, 0x02, 0x00 },   // f
+;    { 0x08, 0x14, 0x54, 0x54, 0x3C, 0x00 },   // g
+;    { 0x7F, 0x08, 0x04, 0x04, 0x78, 0x00 },   // h
+;    { 0x00, 0x44, 0x7D, 0x40, 0x00, 0x00 },   // i
+;    { 0x20, 0x40, 0x44, 0x3D, 0x00, 0x00 },   // j
+;    { 0x00, 0x7F, 0x10, 0x28, 0x44, 0x00 },   // k
+;    { 0x00, 0x41, 0x7F, 0x40, 0x00, 0x00 },   // l
+;    { 0x7C, 0x04, 0x18, 0x04, 0x78, 0x00 },   // m
+;    { 0x7C, 0x08, 0x04, 0x04, 0x78, 0x00 },   // n
+;    { 0x38, 0x44, 0x44, 0x44, 0x38, 0x00 },   // o
+;    { 0x7C, 0x14, 0x14, 0x14, 0x08, 0x00 },   // p
+;    { 0x08, 0x14, 0x14, 0x18, 0x7C, 0x00 },   // q
+;    { 0x7C, 0x08, 0x04, 0x04, 0x08, 0x00 },   // r
+;    { 0x48, 0x54, 0x54, 0x54, 0x20, 0x00 },   // s
+;    { 0x04, 0x3F, 0x44, 0x40, 0x20, 0x00 },   // t
+;    { 0x3C, 0x40, 0x40, 0x20, 0x7C, 0x00 },   // u
+;    { 0x1C, 0x20, 0x40, 0x20, 0x1C, 0x00 },   // v
+;    { 0x3C, 0x40, 0x30, 0x40, 0x3C, 0x00 },   // w
+;    { 0x44, 0x28, 0x10, 0x28, 0x44, 0x00 },   // x
+;    { 0x0C, 0x50, 0x50, 0x50, 0x3C, 0x00 },   // y
+;    { 0x44, 0x64, 0x54, 0x4C, 0x44, 0x00 }    // z
+;};
+;
+;// Bit Control
+;#ifdef _ATXMEGA_DEVICE_
+;#define set_rs  *(glcd_rs_address  + 0x01) = glcd_rs_bit_msk
+;#define set_rw  *(glcd_rw_address  + 0x01) = glcd_rw_bit_msk
+;#define set_en  *(glcd_en_address  + 0x01) = glcd_en_bit_msk
+;#define set_cs1 *(glcd_cs1_address + 0x01) = glcd_cs1_bit_msk
+;#define set_cs2 *(glcd_cs2_address + 0x01) = glcd_cs2_bit_msk
+;#define set_rst *(glcd_rst_address + 0x01) = glcd_rst_bit_msk
+;#define clr_rs  *(glcd_rs_address  + 0x02) = glcd_rs_bit_msk
+;#define clr_rw  *(glcd_rw_address  + 0x02) = glcd_rw_bit_msk
+;#define clr_en  *(glcd_en_address  + 0x02) = glcd_en_bit_msk
+;#define clr_cs1 *(glcd_cs1_address + 0x02) = glcd_cs1_bit_msk
+;#define clr_cs2 *(glcd_cs2_address + 0x02) = glcd_cs2_bit_msk
+;#define clr_rst *(glcd_rst_address + 0x02) = glcd_rst_bit_msk
+;#define tgl_rs  *(glcd_rs_address  + 0x03) = glcd_rs_bit_msk
+;#define tgl_rw  *(glcd_rw_address  + 0x03) = glcd_rw_bit_msk
+;#define tgl_en  *(glcd_en_address  + 0x03) = glcd_en_bit_msk
+;#define tgl_cs1 *(glcd_cs1_address + 0x03) = glcd_cs1_bit_msk
+;#define tgl_cs2 *(glcd_cs2_address + 0x03) = glcd_cs2_bit_msk
+;#define tgl_rst *(glcd_rst_address + 0x03) = glcd_rst_bit_msk
+;#else
+;#define set_rs  SETBIT(*glcd_rs_address, glcd_rs_bit_pos)
+;#define set_rw  SETBIT(*glcd_rw_address, glcd_rw_bit_pos)
+;#define set_en  SETBIT(*glcd_en_address, glcd_en_bit_pos)
+;#define set_cs1 SETBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+;#define set_cs2 SETBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+;#define set_rst SETBIT(*glcd_rst_address,glcd_rst_bit_pos)
+;#define clr_rs  CLRBIT(*glcd_rs_address, glcd_rs_bit_pos)
+;#define clr_rw  CLRBIT(*glcd_rw_address, glcd_rw_bit_pos)
+;#define clr_en  CLRBIT(*glcd_en_address, glcd_en_bit_pos)
+;#define clr_cs1 CLRBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+;#define clr_cs2 CLRBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+;#define clr_rst CLRBIT(*glcd_rst_address,glcd_rst_bit_pos)
+;#define tgl_rs  TGLBIT(*glcd_rs_address, glcd_rs_bit_pos)
+;#define tgl_rw  TGLBIT(*glcd_rw_address, glcd_rw_bit_pos)
+;#define tgl_en  TGLBIT(*glcd_en_address, glcd_en_bit_pos)
+;#define tgl_cs1 TGLBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+;#define tgl_cs2 TGLBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+;#define tgl_rst TGLBIT(*glcd_rst_address,glcd_rst_bit_pos)
+;#endif
+;
+;#define NumberOfCases 33
+;         unsigned int  CaseAddress[NumberOfCases];
+;register unsigned int  CaseAddressIndex @0x02; //R3:R2
+;#define  GotoAddress   CaseAddressIndex
+;
+;// External (user's) functions
+;void glcd_define (unsigned char *glcd_data_port_address,
+; 0000 00E1                   unsigned char *glcd_rs_port_address,  unsigned char glcd_rs_pin,
+; 0000 00E2                   unsigned char *glcd_rw_port_address,  unsigned char glcd_rw_pin,
+; 0000 00E3                   unsigned char *glcd_en_port_address,  unsigned char glcd_en_pin,
+; 0000 00E4                   unsigned char *glcd_cs1_port_address, unsigned char glcd_cs1_pin,
+; 0000 00E5                   unsigned char *glcd_cs2_port_address, unsigned char glcd_cs2_pin,
+; 0000 00E6                   unsigned char *glcd_rst_port_address, unsigned char glcd_rst_pin)
+; 0000 00E7 {
+
+	.CSEG
+;PCODE: $0000000D VOL: 0
+;PCODE: $0000000E VOL: 0
+; 0000 00E8     glcd_data_address = glcd_data_port_address;
+;	*glcd_data_port_address -> Y+18
+;	*glcd_rs_port_address -> Y+16
+;	glcd_rs_pin -> Y+15
+;	*glcd_rw_port_address -> Y+13
+;	glcd_rw_pin -> Y+12
+;	*glcd_en_port_address -> Y+10
+;	glcd_en_pin -> Y+9
+;	*glcd_cs1_port_address -> Y+7
+;	glcd_cs1_pin -> Y+6
+;	*glcd_cs2_port_address -> Y+4
+;	glcd_cs2_pin -> Y+3
+;	*glcd_rst_port_address -> Y+1
+;	glcd_rst_pin -> Y+0
+;PCODE: $0000000F VOL: 0
+;PCODE: $00000010 VOL: 0
+; 0000 00E9     glcd_rs_address   = glcd_rs_port_address;
+;PCODE: $00000011 VOL: 0
+;PCODE: $00000012 VOL: 0
+; 0000 00EA     glcd_rw_address   = glcd_rw_port_address;
+;PCODE: $00000013 VOL: 0
+;PCODE: $00000014 VOL: 0
+; 0000 00EB     glcd_en_address   = glcd_en_port_address;
+;PCODE: $00000015 VOL: 0
+;PCODE: $00000016 VOL: 0
+; 0000 00EC     glcd_cs1_address  = glcd_cs1_port_address;
+;PCODE: $00000017 VOL: 0
+;PCODE: $00000018 VOL: 0
+; 0000 00ED     glcd_cs2_address  = glcd_cs2_port_address;
+;PCODE: $00000019 VOL: 0
+;PCODE: $0000001A VOL: 0
+; 0000 00EE     glcd_rst_address  = glcd_rst_port_address;
+;PCODE: $0000001B VOL: 0
+;PCODE: $0000001C VOL: 0
+; 0000 00EF #ifdef _ATXMEGA_DEVICE_
+; 0000 00F0     glcd_rs_bit_msk  = 0b00000001 << glcd_rs_pin;
+; 0000 00F1     glcd_rw_bit_msk  = 0b00000001 << glcd_rw_pin;
+; 0000 00F2     glcd_en_bit_msk  = 0b00000001 << glcd_en_pin;
+; 0000 00F3     glcd_cs1_bit_msk = 0b00000001 << glcd_cs1_pin;
+; 0000 00F4     glcd_cs2_bit_msk = 0b00000001 << glcd_cs2_pin;
+; 0000 00F5     glcd_rst_bit_msk = 0b00000001 << glcd_rst_pin;
+; 0000 00F6     // Set all the pins as output
+; 0000 00F7     *(glcd_data_address - 0x03) = 0xFF;
+; 0000 00F8     *(glcd_rs_address - 0x03)   = glcd_rs_bit_msk;
+; 0000 00F9     clr_rw;
+; 0000 00FA     *(glcd_rw_address - 0x03)   = glcd_rw_bit_msk;
+; 0000 00FB     *(glcd_en_address - 0x03)   = glcd_en_bit_msk;
+; 0000 00FC     *(glcd_cs1_address - 0x03)  = glcd_cs1_bit_msk;
+; 0000 00FD     *(glcd_cs2_address - 0x03)  = glcd_cs2_bit_msk;
+; 0000 00FE     *(glcd_rst_address - 0x03)  = glcd_rst_bit_msk;
+; 0000 00FF #else
+; 0000 0100     glcd_rs_bit_pos  = glcd_rs_pin;
+;PCODE: $0000001D VOL: 0
+;PCODE: $0000001E VOL: 0
+; 0000 0101     glcd_rw_bit_pos  = glcd_rw_pin;
+;PCODE: $0000001F VOL: 0
+;PCODE: $00000020 VOL: 0
+; 0000 0102     glcd_en_bit_pos  = glcd_en_pin;
+;PCODE: $00000021 VOL: 0
+;PCODE: $00000022 VOL: 0
+; 0000 0103     glcd_cs1_bit_pos = glcd_cs1_pin;
+;PCODE: $00000023 VOL: 0
+;PCODE: $00000024 VOL: 0
+; 0000 0104     glcd_cs2_bit_pos = glcd_cs2_pin;
+;PCODE: $00000025 VOL: 0
+;PCODE: $00000026 VOL: 0
+; 0000 0105     glcd_rst_bit_pos = glcd_rst_pin;
+;PCODE: $00000027 VOL: 0
+;PCODE: $00000028 VOL: 0
+; 0000 0106     // Sets the pins as output
+; 0000 0107     *(glcd_data_address - 1) = 0xFF;
+;PCODE: $00000029 VOL: 0
+;PCODE: $0000002A VOL: 0
+;PCODE: $0000002B VOL: 0
+;PCODE: $0000002C VOL: 0
+; 0000 0108     SETBIT (*(glcd_rs_address - 0x01),glcd_rs_bit_pos);
+;PCODE: $0000002D VOL: 0
+;PCODE: $0000002E VOL: 0
+;PCODE: $0000002F VOL: 0
+;PCODE: $00000030 VOL: 0
+;PCODE: $00000031 VOL: 0
+;PCODE: $00000032 VOL: 0
+;PCODE: $00000033 VOL: 0
+;PCODE: $00000034 VOL: 0
+;PCODE: $00000035 VOL: 0
+;PCODE: $00000036 VOL: 0
+; 0000 0109     SETBIT (*(glcd_rw_address - 0x01),glcd_rw_bit_pos);
+;PCODE: $00000037 VOL: 0
+;PCODE: $00000038 VOL: 0
+;PCODE: $00000039 VOL: 0
+;PCODE: $0000003A VOL: 0
+;PCODE: $0000003B VOL: 0
+;PCODE: $0000003C VOL: 0
+;PCODE: $0000003D VOL: 0
+;PCODE: $0000003E VOL: 0
+;PCODE: $0000003F VOL: 0
+;PCODE: $00000040 VOL: 0
+; 0000 010A     clr_rw;
+;PCODE: $00000041 VOL: 0
+;PCODE: $00000042 VOL: 0
+;PCODE: $00000043 VOL: 0
+;PCODE: $00000044 VOL: 0
+;PCODE: $00000045 VOL: 0
+;PCODE: $00000046 VOL: 0
+;PCODE: $00000047 VOL: 0
+;PCODE: $00000048 VOL: 0
+;PCODE: $00000049 VOL: 0
+;PCODE: $0000004A VOL: 0
+; 0000 010B     SETBIT (*(glcd_en_address - 0x01),glcd_en_bit_pos);
+;PCODE: $0000004B VOL: 0
+;PCODE: $0000004C VOL: 0
+;PCODE: $0000004D VOL: 0
+;PCODE: $0000004E VOL: 0
+;PCODE: $0000004F VOL: 0
+;PCODE: $00000050 VOL: 0
+;PCODE: $00000051 VOL: 0
+;PCODE: $00000052 VOL: 0
+;PCODE: $00000053 VOL: 0
+;PCODE: $00000054 VOL: 0
+; 0000 010C     SETBIT (*(glcd_cs1_address - 0x01),glcd_cs1_bit_pos);
+;PCODE: $00000055 VOL: 0
+;PCODE: $00000056 VOL: 0
+;PCODE: $00000057 VOL: 0
+;PCODE: $00000058 VOL: 0
+;PCODE: $00000059 VOL: 0
+;PCODE: $0000005A VOL: 0
+;PCODE: $0000005B VOL: 0
+;PCODE: $0000005C VOL: 0
+;PCODE: $0000005D VOL: 0
+;PCODE: $0000005E VOL: 0
+; 0000 010D     SETBIT (*(glcd_cs2_address - 0x01),glcd_cs2_bit_pos);
+;PCODE: $0000005F VOL: 0
+;PCODE: $00000060 VOL: 0
+;PCODE: $00000061 VOL: 0
+;PCODE: $00000062 VOL: 0
+;PCODE: $00000063 VOL: 0
+;PCODE: $00000064 VOL: 0
+;PCODE: $00000065 VOL: 0
+;PCODE: $00000066 VOL: 0
+;PCODE: $00000067 VOL: 0
+;PCODE: $00000068 VOL: 0
+; 0000 010E     SETBIT (*(glcd_rst_address - 0x01),glcd_rst_bit_pos);
+;PCODE: $00000069 VOL: 0
+;PCODE: $0000006A VOL: 0
+;PCODE: $0000006B VOL: 0
+;PCODE: $0000006C VOL: 0
+;PCODE: $0000006D VOL: 0
+;PCODE: $0000006E VOL: 0
+;PCODE: $0000006F VOL: 0
+;PCODE: $00000070 VOL: 0
+;PCODE: $00000071 VOL: 0
+;PCODE: $00000072 VOL: 0
+; 0000 010F #endif
+; 0000 0110 #asm
+;PCODE: $00000073 VOL: 0
+; 0000 0111     LDI        R30, LOW(_CaseAddress)
+    LDI        R30, LOW(_CaseAddress)
+;PCODE: $00000074 VOL: 0
+; 0000 0112     LDI     R31, HIGH(_CaseAddress)
+    LDI     R31, HIGH(_CaseAddress)
+;PCODE: $00000075 VOL: 0
+; 0000 0113     ;//Save R16, R17
+    ;//Save R16, R17
+;PCODE: $00000076 VOL: 0
+; 0000 0114     PUSH    R16
+    PUSH    R16
+;PCODE: $00000077 VOL: 0
+; 0000 0115     PUSH    R17
+    PUSH    R17
+;PCODE: $00000078 VOL: 0
+; 0000 0116     ;//Load #1 case for delay function
+    ;//Load #1 case for delay function
+;PCODE: $00000079 VOL: 0
+; 0000 0117     LDI     R16, LOW(DelayLabel1)
+    LDI     R16, LOW(DelayLabel1)
+;PCODE: $0000007A VOL: 0
+; 0000 0118     LDI        R17, HIGH(DelayLabel1)
+    LDI        R17, HIGH(DelayLabel1)
+;PCODE: $0000007B VOL: 0
+; 0000 0119     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000007C VOL: 0
+; 0000 011A     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $0000007D VOL: 0
+; 0000 011B     ;//Load #2 case for delay function
+    ;//Load #2 case for delay function
+;PCODE: $0000007E VOL: 0
+; 0000 011C     LDI     R16, LOW(DelayLabel2)
+    LDI     R16, LOW(DelayLabel2)
+;PCODE: $0000007F VOL: 0
+; 0000 011D     LDI        R17, HIGH(DelayLabel2)
+    LDI        R17, HIGH(DelayLabel2)
+;PCODE: $00000080 VOL: 0
+; 0000 011E     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000081 VOL: 0
+; 0000 011F     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000082 VOL: 0
+; 0000 0120 
+
+;PCODE: $00000083 VOL: 0
+; 0000 0121     LDI     R16, LOW(GlcdUnlockLockLabel1)
+    LDI     R16, LOW(GlcdUnlockLockLabel1)
+;PCODE: $00000084 VOL: 0
+; 0000 0122     LDI        R17, HIGH(GlcdUnlockLockLabel1)
+    LDI        R17, HIGH(GlcdUnlockLockLabel1)
+;PCODE: $00000085 VOL: 0
+; 0000 0123     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000086 VOL: 0
+; 0000 0124     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000087 VOL: 0
+; 0000 0125 
+
+;PCODE: $00000088 VOL: 0
+; 0000 0126     LDI     R16, LOW(GlcdUnlockLockLabel2)
+    LDI     R16, LOW(GlcdUnlockLockLabel2)
+;PCODE: $00000089 VOL: 0
+; 0000 0127     LDI        R17, HIGH(GlcdUnlockLockLabel2)
+    LDI        R17, HIGH(GlcdUnlockLockLabel2)
+;PCODE: $0000008A VOL: 0
+; 0000 0128     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000008B VOL: 0
+; 0000 0129     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $0000008C VOL: 0
+; 0000 012A 
+
+;PCODE: $0000008D VOL: 0
+; 0000 012B     LDI     R16, LOW(GlcdUnlockLockLabel3)
+    LDI     R16, LOW(GlcdUnlockLockLabel3)
+;PCODE: $0000008E VOL: 0
+; 0000 012C     LDI        R17, HIGH(GlcdUnlockLockLabel3)
+    LDI        R17, HIGH(GlcdUnlockLockLabel3)
+;PCODE: $0000008F VOL: 0
+; 0000 012D     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000090 VOL: 0
+; 0000 012E     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000091 VOL: 0
+; 0000 012F 
+
+;PCODE: $00000092 VOL: 0
+; 0000 0130     LDI     R16, LOW(GlcdInitLabel1)
+    LDI     R16, LOW(GlcdInitLabel1)
+;PCODE: $00000093 VOL: 0
+; 0000 0131     LDI        R17, HIGH(GlcdInitLabel1)
+    LDI        R17, HIGH(GlcdInitLabel1)
+;PCODE: $00000094 VOL: 0
+; 0000 0132     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000095 VOL: 0
+; 0000 0133     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000096 VOL: 0
+; 0000 0134 
+
+;PCODE: $00000097 VOL: 0
+; 0000 0135     LDI     R16, LOW(GlcdInitLabel2)
+    LDI     R16, LOW(GlcdInitLabel2)
+;PCODE: $00000098 VOL: 0
+; 0000 0136     LDI        R17, HIGH(GlcdInitLabel2)
+    LDI        R17, HIGH(GlcdInitLabel2)
+;PCODE: $00000099 VOL: 0
+; 0000 0137     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000009A VOL: 0
+; 0000 0138     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $0000009B VOL: 0
+; 0000 0139 
+
+;PCODE: $0000009C VOL: 0
+; 0000 013A     LDI     R16, LOW(GlcdInitLabel3)
+    LDI     R16, LOW(GlcdInitLabel3)
+;PCODE: $0000009D VOL: 0
+; 0000 013B     LDI        R17, HIGH(GlcdInitLabel3)
+    LDI        R17, HIGH(GlcdInitLabel3)
+;PCODE: $0000009E VOL: 0
+; 0000 013C     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000009F VOL: 0
+; 0000 013D     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000A0 VOL: 0
+; 0000 013E 
+
+;PCODE: $000000A1 VOL: 0
+; 0000 013F     LDI     R16, LOW(GlcdInitLabel4)
+    LDI     R16, LOW(GlcdInitLabel4)
+;PCODE: $000000A2 VOL: 0
+; 0000 0140     LDI        R17, HIGH(GlcdInitLabel4)
+    LDI        R17, HIGH(GlcdInitLabel4)
+;PCODE: $000000A3 VOL: 0
+; 0000 0141     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000A4 VOL: 0
+; 0000 0142     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000A5 VOL: 0
+; 0000 0143 
+
+;PCODE: $000000A6 VOL: 0
+; 0000 0144     LDI     R16, LOW(GlcdInitLabel5)
+    LDI     R16, LOW(GlcdInitLabel5)
+;PCODE: $000000A7 VOL: 0
+; 0000 0145     LDI        R17, HIGH(GlcdInitLabel5)
+    LDI        R17, HIGH(GlcdInitLabel5)
+;PCODE: $000000A8 VOL: 0
+; 0000 0146     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000A9 VOL: 0
+; 0000 0147     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000AA VOL: 0
+; 0000 0148 
+
+;PCODE: $000000AB VOL: 0
+; 0000 0149     LDI     R16, LOW(GlcdInitLabel6)
+    LDI     R16, LOW(GlcdInitLabel6)
+;PCODE: $000000AC VOL: 0
+; 0000 014A     LDI        R17, HIGH(GlcdInitLabel6)
+    LDI        R17, HIGH(GlcdInitLabel6)
+;PCODE: $000000AD VOL: 0
+; 0000 014B     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000AE VOL: 0
+; 0000 014C     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000AF VOL: 0
+; 0000 014D 
+
+;PCODE: $000000B0 VOL: 0
+; 0000 014E     LDI     R16, LOW(GlcdInitLabel7)
+    LDI     R16, LOW(GlcdInitLabel7)
+;PCODE: $000000B1 VOL: 0
+; 0000 014F     LDI        R17, HIGH(GlcdInitLabel7)
+    LDI        R17, HIGH(GlcdInitLabel7)
+;PCODE: $000000B2 VOL: 0
+; 0000 0150     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000B3 VOL: 0
+; 0000 0151     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000B4 VOL: 0
+; 0000 0152 
+
+;PCODE: $000000B5 VOL: 0
+; 0000 0153     LDI     R16, LOW(GlcdInitLabel8)
+    LDI     R16, LOW(GlcdInitLabel8)
+;PCODE: $000000B6 VOL: 0
+; 0000 0154     LDI        R17, HIGH(GlcdInitLabel8)
+    LDI        R17, HIGH(GlcdInitLabel8)
+;PCODE: $000000B7 VOL: 0
+; 0000 0155     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000B8 VOL: 0
+; 0000 0156     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000B9 VOL: 0
+; 0000 0157 
+
+;PCODE: $000000BA VOL: 0
+; 0000 0158     LDI     R16, LOW(GlcdWriteByteLabel1)
+    LDI     R16, LOW(GlcdWriteByteLabel1)
+;PCODE: $000000BB VOL: 0
+; 0000 0159     LDI        R17, HIGH(GlcdWriteByteLabel1)
+    LDI        R17, HIGH(GlcdWriteByteLabel1)
+;PCODE: $000000BC VOL: 0
+; 0000 015A     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000BD VOL: 0
+; 0000 015B     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000BE VOL: 0
+; 0000 015C 
+
+;PCODE: $000000BF VOL: 0
+; 0000 015D     LDI     R16, LOW(GlcdWriteByteLabel2)
+    LDI     R16, LOW(GlcdWriteByteLabel2)
+;PCODE: $000000C0 VOL: 0
+; 0000 015E     LDI        R17, HIGH(GlcdWriteByteLabel2)
+    LDI        R17, HIGH(GlcdWriteByteLabel2)
+;PCODE: $000000C1 VOL: 0
+; 0000 015F     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000C2 VOL: 0
+; 0000 0160     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000C3 VOL: 0
+; 0000 0161 
+
+;PCODE: $000000C4 VOL: 0
+; 0000 0162     LDI     R16, LOW(GlcdWriteByteLabel3)
+    LDI     R16, LOW(GlcdWriteByteLabel3)
+;PCODE: $000000C5 VOL: 0
+; 0000 0163     LDI        R17, HIGH(GlcdWriteByteLabel3)
+    LDI        R17, HIGH(GlcdWriteByteLabel3)
+;PCODE: $000000C6 VOL: 0
+; 0000 0164     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000C7 VOL: 0
+; 0000 0165     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000C8 VOL: 0
+; 0000 0166 
+
+;PCODE: $000000C9 VOL: 0
+; 0000 0167     LDI     R16, LOW(GlcdWriteByteLabel4)
+    LDI     R16, LOW(GlcdWriteByteLabel4)
+;PCODE: $000000CA VOL: 0
+; 0000 0168     LDI        R17, HIGH(GlcdWriteByteLabel4)
+    LDI        R17, HIGH(GlcdWriteByteLabel4)
+;PCODE: $000000CB VOL: 0
+; 0000 0169     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000CC VOL: 0
+; 0000 016A     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000CD VOL: 0
+; 0000 016B 
+
+;PCODE: $000000CE VOL: 0
+; 0000 016C     LDI     R16, LOW(GlcdClearPageLabel1)
+    LDI     R16, LOW(GlcdClearPageLabel1)
+;PCODE: $000000CF VOL: 0
+; 0000 016D     LDI        R17, HIGH(GlcdClearPageLabel1)
+    LDI        R17, HIGH(GlcdClearPageLabel1)
+;PCODE: $000000D0 VOL: 0
+; 0000 016E     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000D1 VOL: 0
+; 0000 016F     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000D2 VOL: 0
+; 0000 0170 
+
+;PCODE: $000000D3 VOL: 0
+; 0000 0171     LDI     R16, LOW(GlcdClearPageLabel2)
+    LDI     R16, LOW(GlcdClearPageLabel2)
+;PCODE: $000000D4 VOL: 0
+; 0000 0172     LDI        R17, HIGH(GlcdClearPageLabel2)
+    LDI        R17, HIGH(GlcdClearPageLabel2)
+;PCODE: $000000D5 VOL: 0
+; 0000 0173     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000D6 VOL: 0
+; 0000 0174     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000D7 VOL: 0
+; 0000 0175 
+
+;PCODE: $000000D8 VOL: 0
+; 0000 0176     LDI     R16, LOW(GlcdPutcharLabel1)
+    LDI     R16, LOW(GlcdPutcharLabel1)
+;PCODE: $000000D9 VOL: 0
+; 0000 0177     LDI        R17, HIGH(GlcdPutcharLabel1)
+    LDI        R17, HIGH(GlcdPutcharLabel1)
+;PCODE: $000000DA VOL: 0
+; 0000 0178     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000DB VOL: 0
+; 0000 0179     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000DC VOL: 0
+; 0000 017A 
+
+;PCODE: $000000DD VOL: 0
+; 0000 017B     LDI     R16, LOW(GlcdPutcharLabel2)
+    LDI     R16, LOW(GlcdPutcharLabel2)
+;PCODE: $000000DE VOL: 0
+; 0000 017C     LDI        R17, HIGH(GlcdPutcharLabel2)
+    LDI        R17, HIGH(GlcdPutcharLabel2)
+;PCODE: $000000DF VOL: 0
+; 0000 017D     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000E0 VOL: 0
+; 0000 017E     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000E1 VOL: 0
+; 0000 017F 
+
+;PCODE: $000000E2 VOL: 0
+; 0000 0180     LDI     R16, LOW(GlcdPutsLabel1)
+    LDI     R16, LOW(GlcdPutsLabel1)
+;PCODE: $000000E3 VOL: 0
+; 0000 0181     LDI        R17, HIGH(GlcdPutsLabel1)
+    LDI        R17, HIGH(GlcdPutsLabel1)
+;PCODE: $000000E4 VOL: 0
+; 0000 0182     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000E5 VOL: 0
+; 0000 0183     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000E6 VOL: 0
+; 0000 0184 
+
+;PCODE: $000000E7 VOL: 0
+; 0000 0185     LDI     R16, LOW(GlcdPutsLabel2)
+    LDI     R16, LOW(GlcdPutsLabel2)
+;PCODE: $000000E8 VOL: 0
+; 0000 0186     LDI        R17, HIGH(GlcdPutsLabel2)
+    LDI        R17, HIGH(GlcdPutsLabel2)
+;PCODE: $000000E9 VOL: 0
+; 0000 0187     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000EA VOL: 0
+; 0000 0188     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000EB VOL: 0
+; 0000 0189 
+
+;PCODE: $000000EC VOL: 0
+; 0000 018A     LDI     R16, LOW(GlcdPutsCenterLabel1)
+    LDI     R16, LOW(GlcdPutsCenterLabel1)
+;PCODE: $000000ED VOL: 0
+; 0000 018B     LDI        R17, HIGH(GlcdPutsCenterLabel1)
+    LDI        R17, HIGH(GlcdPutsCenterLabel1)
+;PCODE: $000000EE VOL: 0
+; 0000 018C     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000EF VOL: 0
+; 0000 018D     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000F0 VOL: 0
+; 0000 018E 
+
+;PCODE: $000000F1 VOL: 0
+; 0000 018F     LDI     R16, LOW(GlcdPutsCenterLabel2)
+    LDI     R16, LOW(GlcdPutsCenterLabel2)
+;PCODE: $000000F2 VOL: 0
+; 0000 0190     LDI        R17, HIGH(GlcdPutsCenterLabel2)
+    LDI        R17, HIGH(GlcdPutsCenterLabel2)
+;PCODE: $000000F3 VOL: 0
+; 0000 0191     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000F4 VOL: 0
+; 0000 0192     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000F5 VOL: 0
+; 0000 0193 
+
+;PCODE: $000000F6 VOL: 0
+; 0000 0194     LDI     R16, LOW(GlcdPutsfLabel1)
+    LDI     R16, LOW(GlcdPutsfLabel1)
+;PCODE: $000000F7 VOL: 0
+; 0000 0195     LDI        R17, HIGH(GlcdPutsfLabel1)
+    LDI        R17, HIGH(GlcdPutsfLabel1)
+;PCODE: $000000F8 VOL: 0
+; 0000 0196     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000F9 VOL: 0
+; 0000 0197     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000FA VOL: 0
+; 0000 0198 
+
+;PCODE: $000000FB VOL: 0
+; 0000 0199     LDI     R16, LOW(GlcdPutsfLabel2)
+    LDI     R16, LOW(GlcdPutsfLabel2)
+;PCODE: $000000FC VOL: 0
+; 0000 019A     LDI        R17, HIGH(GlcdPutsfLabel2)
+    LDI        R17, HIGH(GlcdPutsfLabel2)
+;PCODE: $000000FD VOL: 0
+; 0000 019B     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $000000FE VOL: 0
+; 0000 019C     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $000000FF VOL: 0
+; 0000 019D 
+
+;PCODE: $00000100 VOL: 0
+; 0000 019E     LDI     R16, LOW(GlcdPutsfCenterLabel1)
+    LDI     R16, LOW(GlcdPutsfCenterLabel1)
+;PCODE: $00000101 VOL: 0
+; 0000 019F     LDI        R17, HIGH(GlcdPutsfCenterLabel1)
+    LDI        R17, HIGH(GlcdPutsfCenterLabel1)
+;PCODE: $00000102 VOL: 0
+; 0000 01A0     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000103 VOL: 0
+; 0000 01A1     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000104 VOL: 0
+; 0000 01A2 
+
+;PCODE: $00000105 VOL: 0
+; 0000 01A3     LDI     R16, LOW(GlcdPutsfCenterLabel2)
+    LDI     R16, LOW(GlcdPutsfCenterLabel2)
+;PCODE: $00000106 VOL: 0
+; 0000 01A4     LDI        R17, HIGH(GlcdPutsfCenterLabel2)
+    LDI        R17, HIGH(GlcdPutsfCenterLabel2)
+;PCODE: $00000107 VOL: 0
+; 0000 01A5     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000108 VOL: 0
+; 0000 01A6     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000109 VOL: 0
+; 0000 01A7 
+
+;PCODE: $0000010A VOL: 0
+; 0000 01A8     LDI     R16, LOW(GlcdClearLabel1)
+    LDI     R16, LOW(GlcdClearLabel1)
+;PCODE: $0000010B VOL: 0
+; 0000 01A9     LDI        R17, HIGH(GlcdClearLabel1)
+    LDI        R17, HIGH(GlcdClearLabel1)
+;PCODE: $0000010C VOL: 0
+; 0000 01AA     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000010D VOL: 0
+; 0000 01AB     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $0000010E VOL: 0
+; 0000 01AC 
+
+;PCODE: $0000010F VOL: 0
+; 0000 01AD     LDI     R16, LOW(GlcdClearLabel2)
+    LDI     R16, LOW(GlcdClearLabel2)
+;PCODE: $00000110 VOL: 0
+; 0000 01AE     LDI        R17, HIGH(GlcdClearLabel2)
+    LDI        R17, HIGH(GlcdClearLabel2)
+;PCODE: $00000111 VOL: 0
+; 0000 01AF     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000112 VOL: 0
+; 0000 01B0     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000113 VOL: 0
+; 0000 01B1 
+
+;PCODE: $00000114 VOL: 0
+; 0000 01B2     LDI     R16, LOW(GlcdPutbmpLabel1)
+    LDI     R16, LOW(GlcdPutbmpLabel1)
+;PCODE: $00000115 VOL: 0
+; 0000 01B3     LDI        R17, HIGH(GlcdPutbmpLabel1)
+    LDI        R17, HIGH(GlcdPutbmpLabel1)
+;PCODE: $00000116 VOL: 0
+; 0000 01B4     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $00000117 VOL: 0
+; 0000 01B5     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $00000118 VOL: 0
+; 0000 01B6 
+
+;PCODE: $00000119 VOL: 0
+; 0000 01B7     LDI     R16, LOW(GlcdPutbmpLabel2)
+    LDI     R16, LOW(GlcdPutbmpLabel2)
+;PCODE: $0000011A VOL: 0
+; 0000 01B8     LDI        R17, HIGH(GlcdPutbmpLabel2)
+    LDI        R17, HIGH(GlcdPutbmpLabel2)
+;PCODE: $0000011B VOL: 0
+; 0000 01B9     ST        Z+,  R16
+    ST        Z+,  R16
+;PCODE: $0000011C VOL: 0
+; 0000 01BA     ST        Z+,  R17
+    ST        Z+,  R17
+;PCODE: $0000011D VOL: 0
+; 0000 01BB 
+
+;PCODE: $0000011E VOL: 0
+; 0000 01BC     POP        R17
+    POP        R17
+;PCODE: $0000011F VOL: 0
+; 0000 01BD     POP        R16
+    POP        R16
+;PCODE: $00000120 VOL: 0
+;PCODE: $00000121 VOL: 0
+; 0000 01BE #endasm
+; 0000 01BF }
+;PCODE: $00000122 VOL: 0
+;PCODE: $00000123 VOL: 0
+;PCODE: $00000124 VOL: 0
+;
+;// Timer function pointers
+;void (*timer_interrupt_enable) (void);
+;
+;void (*timer_interrupt_disable) (void);
+;
+;void (*set_delay_7us) (void);
+;
+;void (*set_delay_10ms) (void);
+;
+;#define StackSize     10
+;enum cases
+;{
+;    DelayCase1 = 0,
+;    DelayCase2,
+;    GlcdUnlockLockCase1,
+;    GlcdUnlockLockCase2,
+;    GlcdUnlockLockCase3,
+;    GlcdInitCase1,
+;    GlcdInitCase2,
+;    GlcdInitCase3,
+;    GlcdInitCase4,
+;    GlcdInitCase5,
+;    GlcdInitCase6,
+;    GlcdInitCase7,
+;    GlcdInitCase8,
+;    GlcdWriteByteCase1,
+;    GlcdWriteByteCase2,
+;    GlcdWriteByteCase3,
+;    GlcdWriteByteCase4,
+;    GlcdClearPageCase1,
+;    GlcdClearPageCase2,
+;    GlcdPutcharCase1,
+;    GlcdPutcharCase2,
+;    GlcdPutsCase1,
+;    GlcdPutsCase2,
+;    GlcdPutsCenterCase1,
+;    GlcdPutsCenterCase2,
+;    GlcdPutsfCase1,
+;    GlcdPutsfCase2,
+;    GlcdPutsfCenterCase1,
+;    GlcdPutsfCenterCase2,
+;    GlcdClearCase1,
+;    GlcdClearCase2,
+;    GlcdPutbmpCase1,
+;    GlcdPutbmpCase2
+;} CaseStack[StackSize];
+;unsigned char StackPointer = 0xFF;
+;#define GlcdBusy (~StackPointer)
+;
+;unsigned char PushCase (enum cases Case)
+; 0000 01F3 {
+;PCODE: $00000125 VOL: 0
+;PCODE: $00000126 VOL: 0
+; 0000 01F4     if (((StackPointer + 1) < StackSize) || (StackPointer == 0xFF) )
+;	Case -> Y+0
+;PCODE: $00000127 VOL: 0
+;PCODE: $00000128 VOL: 0
+;PCODE: $00000129 VOL: 0
+;PCODE: $0000012A VOL: 0
+;PCODE: $0000012B VOL: 0
+;PCODE: $0000012C VOL: 0
+;PCODE: $0000012D VOL: 0
+;PCODE: $0000012E VOL: 0
+;PCODE: $0000012F VOL: 0
+;PCODE: $00000130 VOL: 0
+; 0000 01F5     {
+; 0000 01F6         StackPointer++;
+;PCODE: $00000131 VOL: 0
+; 0000 01F7         CaseStack[StackPointer] = Case;
+;PCODE: $00000132 VOL: 0
+;PCODE: $00000133 VOL: 0
+;PCODE: $00000134 VOL: 0
+;PCODE: $00000135 VOL: 0
+;PCODE: $00000136 VOL: 0
+; 0000 01F8         return 0;
+;PCODE: $00000137 VOL: 0
+;PCODE: $00000138 VOL: 0
+;PCODE: $00000139 VOL: 0
+; 0000 01F9     }
+; 0000 01FA     else
+;PCODE: $0000013A VOL: 0
+; 0000 01FB         return 1;
+;PCODE: $0000013B VOL: 0
+;PCODE: $0000013C VOL: 0
+;PCODE: $0000013D VOL: 0
+; 0000 01FC }
+;PCODE: $0000013E VOL: 0
+;PCODE: $0000013F VOL: 0
+;PCODE: $00000140 VOL: 0
+;PCODE: $00000141 VOL: 0
+;
+;unsigned char PopCase (void)
+; 0000 01FF {
+;PCODE: $00000142 VOL: 0
+;PCODE: $00000143 VOL: 0
+; 0000 0200     if (~StackPointer)
+;PCODE: $00000144 VOL: 0
+;PCODE: $00000145 VOL: 0
+;PCODE: $00000146 VOL: 0
+;PCODE: $00000147 VOL: 0
+; 0000 0201     {
+; 0000 0202         StackPointer--;
+;PCODE: $00000148 VOL: 0
+; 0000 0203         return 0;
+;PCODE: $00000149 VOL: 0
+;PCODE: $0000014A VOL: 0
+; 0000 0204     }
+; 0000 0205     else
+;PCODE: $0000014B VOL: 0
+; 0000 0206         return 1;
+;PCODE: $0000014C VOL: 0
+;PCODE: $0000014D VOL: 0
+; 0000 0207 }
+;PCODE: $0000014E VOL: 0
+;PCODE: $0000014F VOL: 0
+;PCODE: $00000150 VOL: 0
+;
+;unsigned char strlen_char (unsigned char *str)
+; 0000 020A {
+;PCODE: $00000151 VOL: 0
+;PCODE: $00000152 VOL: 0
+; 0000 020B     unsigned char i;
+; 0000 020C     for (i = 0; *str++ != 0;i++);
+;PCODE: $00000153 VOL: 0
+;	*str -> Y+1
+;	i -> R17
+;PCODE: $00000154 VOL: 0
+;PCODE: $00000155 VOL: 0
+;PCODE: $00000156 VOL: 0
+;PCODE: $00000157 VOL: 0
+;PCODE: $00000158 VOL: 0
+;PCODE: $00000159 VOL: 0
+;PCODE: $0000015A VOL: 0
+;PCODE: $0000015B VOL: 0
+;PCODE: $0000015C VOL: 0
+;PCODE: $0000015D VOL: 0
+;PCODE: $0000015E VOL: 0
+;PCODE: $0000015F VOL: 0
+;PCODE: $00000160 VOL: 0
+;PCODE: $00000161 VOL: 0
+;PCODE: $00000162 VOL: 0
+;PCODE: $00000163 VOL: 0
+; 0000 020D     return i;
+;PCODE: $00000164 VOL: 0
+;PCODE: $00000165 VOL: 0
+;PCODE: $00000166 VOL: 0
+;PCODE: $00000167 VOL: 0
+;PCODE: $00000168 VOL: 0
+; 0000 020E }
+;PCODE: $00000169 VOL: 0
+;
+;unsigned char strlenf_char (flash unsigned char *str)
+; 0000 0211 {
+;PCODE: $0000016A VOL: 0
+;PCODE: $0000016B VOL: 0
+; 0000 0212     unsigned char i;
+; 0000 0213     for (i = 0; *str++ != 0;i++);
+;PCODE: $0000016C VOL: 0
+;	*str -> Y+1
+;	i -> R17
+;PCODE: $0000016D VOL: 0
+;PCODE: $0000016E VOL: 0
+;PCODE: $0000016F VOL: 0
+;PCODE: $00000170 VOL: 0
+;PCODE: $00000171 VOL: 0
+;PCODE: $00000172 VOL: 0
+;PCODE: $00000173 VOL: 0
+;PCODE: $00000174 VOL: 0
+;PCODE: $00000175 VOL: 0
+;PCODE: $00000176 VOL: 0
+;PCODE: $00000177 VOL: 0
+;PCODE: $00000178 VOL: 0
+;PCODE: $00000179 VOL: 0
+;PCODE: $0000017A VOL: 0
+;PCODE: $0000017B VOL: 0
+;PCODE: $0000017C VOL: 0
+;PCODE: $0000017D VOL: 0
+;PCODE: $0000017E VOL: 0
+; 0000 0214     return i;
+;PCODE: $0000017F VOL: 0
+;PCODE: $00000180 VOL: 0
+;PCODE: $00000181 VOL: 0
+;PCODE: $00000182 VOL: 0
+;PCODE: $00000183 VOL: 0
+; 0000 0215 }
+;PCODE: $00000184 VOL: 0
+;
+;#define IndirectGoto    do\
+;                        {\
+;                            #asm("MOV    R30, R2")\
+;                            #asm("MOV    R31, R3")\
+;                            #asm("IJMP")\
+;                        } while (0)
+;
+;#define GotoNextCase    if ((~StackPointer))\
+;                        {\
+;                            GotoAddress = CaseAddress[CaseStack[StackPointer]];\
+;                            IndirectGoto;\
+;                        }\
+;                        else\
+;                            return
+;
+;#define SetCurrentCase(CCase)    CaseStack[StackPointer] = CCase
+;
+;#define StackPlus(Case,Label)   do\
+;                                {\
+;                                    SetCurrentCase(Case);\
+;                                    StackPointer++;\
+;                                    goto Label;\
+;                                }\
+;                                while (0)
+;
+;#define StackMinus()            do\
+;                                {\
+;                                    PopCase();\
+;                                    GotoNextCase;\
+;                                }\
+;                                while (0)
+;
+;#define DebugDisplay(Pos,Char)  do\
+;                                {\
+;                                    lcd_gotoxy(0,0);\
+;                                    lcd_putsf("          ");\
+;                                    lcd_gotoxy(Pos,0);\
+;                                    lcd_putchar(Char);\
+;                                }\
+;                                while (0)
+;
+;unsigned char GlcdPage;
+;unsigned char GlcdColumn;
+;unsigned char GlcdDataByte;
+;unsigned char GlcdChar;
+;unsigned char *GlcdString;
+;flash unsigned char *GlcdFlashString;
+;flash unsigned char *GlcdFlashPointer;
+;
+;void glcd_timer_isr (void)
+; 0000 0249 {
+;PCODE: $00000185 VOL: 0
+;PCODE: $00000186 VOL: 0
+; 0000 024A     static unsigned char i;
+; 0000 024B     static unsigned int  j;
+; 0000 024C     if (StackPointer != 0xFF)
+;PCODE: $00000187 VOL: 0
+;PCODE: $00000188 VOL: 0
+;PCODE: $00000189 VOL: 0
+; 0000 024D     {
+; 0000 024E         if (StackPointer == 0x00)
+;PCODE: $0000018A VOL: 0
+;PCODE: $0000018B VOL: 0
+; 0000 024F         {
+; 0000 0250             GotoNextCase;
+;PCODE: $0000018C VOL: 0
+;PCODE: $0000018D VOL: 0
+;PCODE: $0000018E VOL: 0
+;PCODE: $0000018F VOL: 0
+;PCODE: $00000190 VOL: 0
+;PCODE: $00000191 VOL: 0
+;PCODE: $00000192 VOL: 0
+;PCODE: $00000193 VOL: 0
+;PCODE: $00000194 VOL: 0
+;PCODE: $00000195 VOL: 0
+;PCODE: $00000196 VOL: 0
+;PCODE: $00000197 VOL: 0
+;PCODE: $00000198 VOL: 0
+;PCODE: $00000199 VOL: 0
+;PCODE: $0000019A VOL: 0
+	MOV    R30, R2
+;PCODE: $0000019B VOL: 0
+;PCODE: $0000019C VOL: 0
+	MOV    R31, R3
+;PCODE: $0000019D VOL: 0
+;PCODE: $0000019E VOL: 0
+	IJMP
+;PCODE: $0000019F VOL: 0
+;PCODE: $000001A0 VOL: 0
+;PCODE: $000001A1 VOL: 0
+;PCODE: $000001A2 VOL: 0
+;PCODE: $000001A3 VOL: 0
+;PCODE: $000001A4 VOL: 0
+;PCODE: $000001A5 VOL: 0
+;PCODE: $000001A6 VOL: 0
+; 0000 0251         }
+;PCODE: $000001A7 VOL: 0
+; 0000 0252 /////////////////////////////////////////////////////////////////////////
+; 0000 0253 #asm
+;PCODE: $000001A8 VOL: 0
+;PCODE: $000001A9 VOL: 0
+; 0000 0254 DelayLabel2:
+DelayLabel2:
+;PCODE: $000001AA VOL: 0
+;PCODE: $000001AB VOL: 0
+; 0000 0255 #endasm
+; 0000 0256 DelayLabel2:
+;PCODE: $000001AC VOL: 0
+; 0000 0257         (*timer_interrupt_disable)();
+;PCODE: $000001AD VOL: 0
+;PCODE: $000001AE VOL: 0
+; 0000 0258 #ifdef Debugging
+; 0000 0259         DebugDisplay(0x0,'2');
+; 0000 025A         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 025B #endif
+; 0000 025C         StackMinus();
+;PCODE: $000001AF VOL: 0
+;PCODE: $000001B0 VOL: 0
+;PCODE: $000001B1 VOL: 0
+;PCODE: $000001B2 VOL: 0
+;PCODE: $000001B3 VOL: 0
+;PCODE: $000001B4 VOL: 0
+;PCODE: $000001B5 VOL: 0
+;PCODE: $000001B6 VOL: 0
+;PCODE: $000001B7 VOL: 0
+;PCODE: $000001B8 VOL: 0
+;PCODE: $000001B9 VOL: 0
+;PCODE: $000001BA VOL: 0
+;PCODE: $000001BB VOL: 0
+;PCODE: $000001BC VOL: 0
+;PCODE: $000001BD VOL: 0
+;PCODE: $000001BE VOL: 0
+;PCODE: $000001BF VOL: 0
+	MOV    R30, R2
+;PCODE: $000001C0 VOL: 0
+;PCODE: $000001C1 VOL: 0
+	MOV    R31, R3
+;PCODE: $000001C2 VOL: 0
+;PCODE: $000001C3 VOL: 0
+	IJMP
+;PCODE: $000001C4 VOL: 0
+;PCODE: $000001C5 VOL: 0
+;PCODE: $000001C6 VOL: 0
+;PCODE: $000001C7 VOL: 0
+;PCODE: $000001C8 VOL: 0
+;PCODE: $000001C9 VOL: 0
+;PCODE: $000001CA VOL: 0
+;PCODE: $000001CB VOL: 0
+;PCODE: $000001CC VOL: 0
+;PCODE: $000001CD VOL: 0
+;PCODE: $000001CE VOL: 0
+;PCODE: $000001CF VOL: 0
+;PCODE: $000001D0 VOL: 0
+; 0000 025D #asm
+;PCODE: $000001D1 VOL: 0
+; 0000 025E DelayLabel1:
+DelayLabel1:
+;PCODE: $000001D2 VOL: 0
+;PCODE: $000001D3 VOL: 0
+; 0000 025F #endasm
+; 0000 0260 DelayLabel1:
+;PCODE: $000001D4 VOL: 0
+; 0000 0261 #ifdef Debugging
+; 0000 0262         DebugDisplay(0x0,'1');
+; 0000 0263         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0264 #endif
+; 0000 0265         SetCurrentCase(DelayCase2);
+;PCODE: $000001D5 VOL: 0
+;PCODE: $000001D6 VOL: 0
+;PCODE: $000001D7 VOL: 0
+;PCODE: $000001D8 VOL: 0
+;PCODE: $000001D9 VOL: 0
+; 0000 0266         (*timer_interrupt_enable)();
+;PCODE: $000001DA VOL: 0
+;PCODE: $000001DB VOL: 0
+; 0000 0267         return;
+;PCODE: $000001DC VOL: 0
+; 0000 0268 #asm
+;PCODE: $000001DD VOL: 0
+; 0000 0269 GlcdUnlockLockLabel3:
+GlcdUnlockLockLabel3:
+;PCODE: $000001DE VOL: 0
+;PCODE: $000001DF VOL: 0
+; 0000 026A #endasm
+; 0000 026B GlcdUnlockLockLabel3:
+;PCODE: $000001E0 VOL: 0
+; 0000 026C #ifdef Debugging
+; 0000 026D         DebugDisplay(0x1,'3');
+; 0000 026E         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 026F #endif
+; 0000 0270         clr_en;
+;PCODE: $000001E1 VOL: 0
+;PCODE: $000001E2 VOL: 0
+;PCODE: $000001E3 VOL: 0
+;PCODE: $000001E4 VOL: 0
+;PCODE: $000001E5 VOL: 0
+;PCODE: $000001E6 VOL: 0
+;PCODE: $000001E7 VOL: 0
+;PCODE: $000001E8 VOL: 0
+;PCODE: $000001E9 VOL: 0
+;PCODE: $000001EA VOL: 0
+; 0000 0271         StackMinus();
+;PCODE: $000001EB VOL: 0
+;PCODE: $000001EC VOL: 0
+;PCODE: $000001ED VOL: 0
+;PCODE: $000001EE VOL: 0
+;PCODE: $000001EF VOL: 0
+;PCODE: $000001F0 VOL: 0
+;PCODE: $000001F1 VOL: 0
+;PCODE: $000001F2 VOL: 0
+;PCODE: $000001F3 VOL: 0
+;PCODE: $000001F4 VOL: 0
+;PCODE: $000001F5 VOL: 0
+;PCODE: $000001F6 VOL: 0
+;PCODE: $000001F7 VOL: 0
+;PCODE: $000001F8 VOL: 0
+;PCODE: $000001F9 VOL: 0
+;PCODE: $000001FA VOL: 0
+;PCODE: $000001FB VOL: 0
+	MOV    R30, R2
+;PCODE: $000001FC VOL: 0
+;PCODE: $000001FD VOL: 0
+	MOV    R31, R3
+;PCODE: $000001FE VOL: 0
+;PCODE: $000001FF VOL: 0
+	IJMP
+;PCODE: $00000200 VOL: 0
+;PCODE: $00000201 VOL: 0
+;PCODE: $00000202 VOL: 0
+;PCODE: $00000203 VOL: 0
+;PCODE: $00000204 VOL: 0
+;PCODE: $00000205 VOL: 0
+;PCODE: $00000206 VOL: 0
+;PCODE: $00000207 VOL: 0
+;PCODE: $00000208 VOL: 0
+;PCODE: $00000209 VOL: 0
+;PCODE: $0000020A VOL: 0
+;PCODE: $0000020B VOL: 0
+;PCODE: $0000020C VOL: 0
+; 0000 0272 #asm
+;PCODE: $0000020D VOL: 0
+; 0000 0273 GlcdUnlockLockLabel2:
+GlcdUnlockLockLabel2:
+;PCODE: $0000020E VOL: 0
+;PCODE: $0000020F VOL: 0
+; 0000 0274 #endasm
+; 0000 0275 GlcdUnlockLockLabel2:
+;PCODE: $00000210 VOL: 0
+; 0000 0276 #ifdef Debugging
+; 0000 0277         DebugDisplay(0x1,'2');
+; 0000 0278         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0279 #endif
+; 0000 027A         set_en;
+;PCODE: $00000211 VOL: 0
+;PCODE: $00000212 VOL: 0
+;PCODE: $00000213 VOL: 0
+;PCODE: $00000214 VOL: 0
+;PCODE: $00000215 VOL: 0
+;PCODE: $00000216 VOL: 0
+;PCODE: $00000217 VOL: 0
+;PCODE: $00000218 VOL: 0
+;PCODE: $00000219 VOL: 0
+; 0000 027B         StackPlus(GlcdUnlockLockCase3,DelayLabel1);
+;PCODE: $0000021A VOL: 0
+;PCODE: $0000021B VOL: 0
+;PCODE: $0000021C VOL: 0
+;PCODE: $0000021D VOL: 0
+;PCODE: $0000021E VOL: 0
+;PCODE: $0000021F VOL: 0
+;PCODE: $00000220 VOL: 0
+;PCODE: $00000221 VOL: 0
+;PCODE: $00000222 VOL: 0
+;PCODE: $00000223 VOL: 0
+;PCODE: $00000224 VOL: 0
+;PCODE: $00000225 VOL: 0
+; 0000 027C #asm
+;PCODE: $00000226 VOL: 0
+; 0000 027D GlcdUnlockLockLabel1:
+GlcdUnlockLockLabel1:
+;PCODE: $00000227 VOL: 0
+;PCODE: $00000228 VOL: 0
+; 0000 027E #endasm
+; 0000 027F GlcdUnlockLockLabel1:
+;PCODE: $00000229 VOL: 0
+; 0000 0280 #ifdef Debugging
+; 0000 0281         DebugDisplay(0x1,'1');
+; 0000 0282         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0283 #endif
+; 0000 0284         (*set_delay_7us)();
+;PCODE: $0000022A VOL: 0
+;PCODE: $0000022B VOL: 0
+; 0000 0285         StackPlus(GlcdUnlockLockCase2,DelayLabel1);
+;PCODE: $0000022C VOL: 0
+;PCODE: $0000022D VOL: 0
+;PCODE: $0000022E VOL: 0
+;PCODE: $0000022F VOL: 0
+;PCODE: $00000230 VOL: 0
+;PCODE: $00000231 VOL: 0
+;PCODE: $00000232 VOL: 0
+;PCODE: $00000233 VOL: 0
+;PCODE: $00000234 VOL: 0
+;PCODE: $00000235 VOL: 0
+;PCODE: $00000236 VOL: 0
+;PCODE: $00000237 VOL: 0
+; 0000 0286 #asm
+;PCODE: $00000238 VOL: 0
+; 0000 0287 GlcdInitLabel8:
+GlcdInitLabel8:
+;PCODE: $00000239 VOL: 0
+;PCODE: $0000023A VOL: 0
+; 0000 0288 #endasm
+; 0000 0289 GlcdInitLabel8:
+;PCODE: $0000023B VOL: 0
+; 0000 028A #ifdef Debugging
+; 0000 028B         DebugDisplay(0x2,'8');
+; 0000 028C         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 028D #endif
+; 0000 028E         StackMinus();
+;PCODE: $0000023C VOL: 0
+;PCODE: $0000023D VOL: 0
+;PCODE: $0000023E VOL: 0
+;PCODE: $0000023F VOL: 0
+;PCODE: $00000240 VOL: 0
+;PCODE: $00000241 VOL: 0
+;PCODE: $00000242 VOL: 0
+;PCODE: $00000243 VOL: 0
+;PCODE: $00000244 VOL: 0
+;PCODE: $00000245 VOL: 0
+;PCODE: $00000246 VOL: 0
+;PCODE: $00000247 VOL: 0
+;PCODE: $00000248 VOL: 0
+;PCODE: $00000249 VOL: 0
+;PCODE: $0000024A VOL: 0
+;PCODE: $0000024B VOL: 0
+;PCODE: $0000024C VOL: 0
+	MOV    R30, R2
+;PCODE: $0000024D VOL: 0
+;PCODE: $0000024E VOL: 0
+	MOV    R31, R3
+;PCODE: $0000024F VOL: 0
+;PCODE: $00000250 VOL: 0
+	IJMP
+;PCODE: $00000251 VOL: 0
+;PCODE: $00000252 VOL: 0
+;PCODE: $00000253 VOL: 0
+;PCODE: $00000254 VOL: 0
+;PCODE: $00000255 VOL: 0
+;PCODE: $00000256 VOL: 0
+;PCODE: $00000257 VOL: 0
+;PCODE: $00000258 VOL: 0
+;PCODE: $00000259 VOL: 0
+;PCODE: $0000025A VOL: 0
+;PCODE: $0000025B VOL: 0
+;PCODE: $0000025C VOL: 0
+;PCODE: $0000025D VOL: 0
+; 0000 028F #asm
+;PCODE: $0000025E VOL: 0
+; 0000 0290 GlcdInitLabel7:
+GlcdInitLabel7:
+;PCODE: $0000025F VOL: 0
+;PCODE: $00000260 VOL: 0
+; 0000 0291 #endasm
+; 0000 0292 GlcdInitLabel7:
+;PCODE: $00000261 VOL: 0
+; 0000 0293 #ifdef Debugging
+; 0000 0294         DebugDisplay(0x2,'7');
+; 0000 0295         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0296 #endif
+; 0000 0297         tgl_cs1;
+;PCODE: $00000262 VOL: 0
+;PCODE: $00000263 VOL: 0
+;PCODE: $00000264 VOL: 0
+;PCODE: $00000265 VOL: 0
+;PCODE: $00000266 VOL: 0
+;PCODE: $00000267 VOL: 0
+;PCODE: $00000268 VOL: 0
+;PCODE: $00000269 VOL: 0
+;PCODE: $0000026A VOL: 0
+; 0000 0298         tgl_cs2;
+;PCODE: $0000026B VOL: 0
+;PCODE: $0000026C VOL: 0
+;PCODE: $0000026D VOL: 0
+;PCODE: $0000026E VOL: 0
+;PCODE: $0000026F VOL: 0
+;PCODE: $00000270 VOL: 0
+;PCODE: $00000271 VOL: 0
+;PCODE: $00000272 VOL: 0
+;PCODE: $00000273 VOL: 0
+; 0000 0299         *glcd_data_address = 0x3E;
+;PCODE: $00000274 VOL: 0
+;PCODE: $00000275 VOL: 0
+;PCODE: $00000276 VOL: 0
+; 0000 029A         StackPlus(GlcdInitCase4,GlcdUnlockLockLabel1);
+;PCODE: $00000277 VOL: 0
+;PCODE: $00000278 VOL: 0
+;PCODE: $00000279 VOL: 0
+;PCODE: $0000027A VOL: 0
+;PCODE: $0000027B VOL: 0
+;PCODE: $0000027C VOL: 0
+;PCODE: $0000027D VOL: 0
+;PCODE: $0000027E VOL: 0
+;PCODE: $0000027F VOL: 0
+;PCODE: $00000280 VOL: 0
+;PCODE: $00000281 VOL: 0
+;PCODE: $00000282 VOL: 0
+; 0000 029B #asm
+;PCODE: $00000283 VOL: 0
+; 0000 029C GlcdInitLabel6:
+GlcdInitLabel6:
+;PCODE: $00000284 VOL: 0
+;PCODE: $00000285 VOL: 0
+; 0000 029D #endasm
+; 0000 029E GlcdInitLabel6:
+;PCODE: $00000286 VOL: 0
+; 0000 029F #ifdef Debugging
+; 0000 02A0         DebugDisplay(0x2,'6');
+; 0000 02A1         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02A2 #endif
+; 0000 02A3         *glcd_data_address = 0x3F;
+;PCODE: $00000287 VOL: 0
+;PCODE: $00000288 VOL: 0
+;PCODE: $00000289 VOL: 0
+; 0000 02A4         i++;
+;PCODE: $0000028A VOL: 0
+;PCODE: $0000028B VOL: 0
+;PCODE: $0000028C VOL: 0
+; 0000 02A5         if (i < 2)
+;PCODE: $0000028D VOL: 0
+;PCODE: $0000028E VOL: 0
+;PCODE: $0000028F VOL: 0
+; 0000 02A6             SetCurrentCase(GlcdInitCase7);
+;PCODE: $00000290 VOL: 0
+;PCODE: $00000291 VOL: 0
+;PCODE: $00000292 VOL: 0
+;PCODE: $00000293 VOL: 0
+;PCODE: $00000294 VOL: 0
+; 0000 02A7         else
+;PCODE: $00000295 VOL: 0
+;PCODE: $00000296 VOL: 0
+; 0000 02A8             SetCurrentCase(GlcdInitCase8);
+;PCODE: $00000297 VOL: 0
+;PCODE: $00000298 VOL: 0
+;PCODE: $00000299 VOL: 0
+;PCODE: $0000029A VOL: 0
+;PCODE: $0000029B VOL: 0
+; 0000 02A9         StackPointer++;
+;PCODE: $0000029C VOL: 0
+;PCODE: $0000029D VOL: 0
+; 0000 02AA         #asm("JMP GlcdUnlockLockLabel1")
+;PCODE: $0000029E VOL: 0
+	JMP GlcdUnlockLockLabel1
+;PCODE: $0000029F VOL: 0
+; 0000 02AB #asm
+;PCODE: $000002A0 VOL: 0
+; 0000 02AC GlcdInitLabel5:
+GlcdInitLabel5:
+;PCODE: $000002A1 VOL: 0
+;PCODE: $000002A2 VOL: 0
+; 0000 02AD #endasm
+; 0000 02AE GlcdInitLabel5:
+;PCODE: $000002A3 VOL: 0
+; 0000 02AF #ifdef Debugging
+; 0000 02B0         DebugDisplay(0x2,'5');
+; 0000 02B1         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02B2 #endif
+; 0000 02B3         *glcd_data_address = 0xB8;
+;PCODE: $000002A4 VOL: 0
+;PCODE: $000002A5 VOL: 0
+;PCODE: $000002A6 VOL: 0
+; 0000 02B4         StackPlus(GlcdInitCase6,GlcdUnlockLockLabel1);
+;PCODE: $000002A7 VOL: 0
+;PCODE: $000002A8 VOL: 0
+;PCODE: $000002A9 VOL: 0
+;PCODE: $000002AA VOL: 0
+;PCODE: $000002AB VOL: 0
+;PCODE: $000002AC VOL: 0
+;PCODE: $000002AD VOL: 0
+;PCODE: $000002AE VOL: 0
+;PCODE: $000002AF VOL: 0
+;PCODE: $000002B0 VOL: 0
+;PCODE: $000002B1 VOL: 0
+;PCODE: $000002B2 VOL: 0
+; 0000 02B5 #asm
+;PCODE: $000002B3 VOL: 0
+; 0000 02B6 GlcdInitLabel4:
+GlcdInitLabel4:
+;PCODE: $000002B4 VOL: 0
+;PCODE: $000002B5 VOL: 0
+; 0000 02B7 #endasm
+; 0000 02B8 GlcdInitLabel4:
+;PCODE: $000002B6 VOL: 0
+; 0000 02B9 #ifdef Debugging
+; 0000 02BA         DebugDisplay(0x2,'4');
+; 0000 02BB         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02BC #endif
+; 0000 02BD         *glcd_data_address = 0x40;
+;PCODE: $000002B7 VOL: 0
+;PCODE: $000002B8 VOL: 0
+;PCODE: $000002B9 VOL: 0
+; 0000 02BE         StackPlus(GlcdInitCase5,GlcdUnlockLockLabel1);
+;PCODE: $000002BA VOL: 0
+;PCODE: $000002BB VOL: 0
+;PCODE: $000002BC VOL: 0
+;PCODE: $000002BD VOL: 0
+;PCODE: $000002BE VOL: 0
+;PCODE: $000002BF VOL: 0
+;PCODE: $000002C0 VOL: 0
+;PCODE: $000002C1 VOL: 0
+;PCODE: $000002C2 VOL: 0
+;PCODE: $000002C3 VOL: 0
+;PCODE: $000002C4 VOL: 0
+;PCODE: $000002C5 VOL: 0
+; 0000 02BF #asm
+;PCODE: $000002C6 VOL: 0
+; 0000 02C0 GlcdInitLabel3:
+GlcdInitLabel3:
+;PCODE: $000002C7 VOL: 0
+;PCODE: $000002C8 VOL: 0
+; 0000 02C1 #endasm
+; 0000 02C2 GlcdInitLabel3:
+;PCODE: $000002C9 VOL: 0
+; 0000 02C3 #ifdef Debugging
+; 0000 02C4         DebugDisplay(0x2,'3');
+; 0000 02C5         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02C6 #endif
+; 0000 02C7         clr_rs;
+;PCODE: $000002CA VOL: 0
+;PCODE: $000002CB VOL: 0
+;PCODE: $000002CC VOL: 0
+;PCODE: $000002CD VOL: 0
+;PCODE: $000002CE VOL: 0
+;PCODE: $000002CF VOL: 0
+;PCODE: $000002D0 VOL: 0
+;PCODE: $000002D1 VOL: 0
+;PCODE: $000002D2 VOL: 0
+;PCODE: $000002D3 VOL: 0
+; 0000 02C8         clr_cs1;
+;PCODE: $000002D4 VOL: 0
+;PCODE: $000002D5 VOL: 0
+;PCODE: $000002D6 VOL: 0
+;PCODE: $000002D7 VOL: 0
+;PCODE: $000002D8 VOL: 0
+;PCODE: $000002D9 VOL: 0
+;PCODE: $000002DA VOL: 0
+;PCODE: $000002DB VOL: 0
+;PCODE: $000002DC VOL: 0
+;PCODE: $000002DD VOL: 0
+; 0000 02C9         set_cs2;
+;PCODE: $000002DE VOL: 0
+;PCODE: $000002DF VOL: 0
+;PCODE: $000002E0 VOL: 0
+;PCODE: $000002E1 VOL: 0
+;PCODE: $000002E2 VOL: 0
+;PCODE: $000002E3 VOL: 0
+;PCODE: $000002E4 VOL: 0
+;PCODE: $000002E5 VOL: 0
+;PCODE: $000002E6 VOL: 0
+; 0000 02CA         *glcd_data_address = 0x3E;
+;PCODE: $000002E7 VOL: 0
+;PCODE: $000002E8 VOL: 0
+;PCODE: $000002E9 VOL: 0
+; 0000 02CB         StackPlus(GlcdInitCase4,GlcdUnlockLockLabel1);
+;PCODE: $000002EA VOL: 0
+;PCODE: $000002EB VOL: 0
+;PCODE: $000002EC VOL: 0
+;PCODE: $000002ED VOL: 0
+;PCODE: $000002EE VOL: 0
+;PCODE: $000002EF VOL: 0
+;PCODE: $000002F0 VOL: 0
+;PCODE: $000002F1 VOL: 0
+;PCODE: $000002F2 VOL: 0
+;PCODE: $000002F3 VOL: 0
+;PCODE: $000002F4 VOL: 0
+;PCODE: $000002F5 VOL: 0
+; 0000 02CC #asm
+;PCODE: $000002F6 VOL: 0
+; 0000 02CD GlcdInitLabel2:
+GlcdInitLabel2:
+;PCODE: $000002F7 VOL: 0
+;PCODE: $000002F8 VOL: 0
+; 0000 02CE #endasm
+; 0000 02CF GlcdInitLabel2:
+;PCODE: $000002F9 VOL: 0
+; 0000 02D0 #ifdef Debugging
+; 0000 02D1         DebugDisplay(0x2,'2');
+; 0000 02D2         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02D3 #endif
+; 0000 02D4         set_rst;
+;PCODE: $000002FA VOL: 0
+;PCODE: $000002FB VOL: 0
+;PCODE: $000002FC VOL: 0
+;PCODE: $000002FD VOL: 0
+;PCODE: $000002FE VOL: 0
+;PCODE: $000002FF VOL: 0
+;PCODE: $00000300 VOL: 0
+;PCODE: $00000301 VOL: 0
+;PCODE: $00000302 VOL: 0
+; 0000 02D5         StackPlus(GlcdInitCase3,DelayLabel1);
+;PCODE: $00000303 VOL: 0
+;PCODE: $00000304 VOL: 0
+;PCODE: $00000305 VOL: 0
+;PCODE: $00000306 VOL: 0
+;PCODE: $00000307 VOL: 0
+;PCODE: $00000308 VOL: 0
+;PCODE: $00000309 VOL: 0
+;PCODE: $0000030A VOL: 0
+;PCODE: $0000030B VOL: 0
+;PCODE: $0000030C VOL: 0
+;PCODE: $0000030D VOL: 0
+;PCODE: $0000030E VOL: 0
+; 0000 02D6 #asm
+;PCODE: $0000030F VOL: 0
+; 0000 02D7 GlcdInitLabel1:
+GlcdInitLabel1:
+;PCODE: $00000310 VOL: 0
+;PCODE: $00000311 VOL: 0
+; 0000 02D8 #endasm
+; 0000 02D9 GlcdInitLabel1:
+;PCODE: $00000312 VOL: 0
+; 0000 02DA         i = 0;
+;PCODE: $00000313 VOL: 0
+;PCODE: $00000314 VOL: 0
+; 0000 02DB         clr_rst;
+;PCODE: $00000315 VOL: 0
+;PCODE: $00000316 VOL: 0
+;PCODE: $00000317 VOL: 0
+;PCODE: $00000318 VOL: 0
+;PCODE: $00000319 VOL: 0
+;PCODE: $0000031A VOL: 0
+;PCODE: $0000031B VOL: 0
+;PCODE: $0000031C VOL: 0
+;PCODE: $0000031D VOL: 0
+;PCODE: $0000031E VOL: 0
+; 0000 02DC         (*set_delay_10ms)();
+;PCODE: $0000031F VOL: 0
+;PCODE: $00000320 VOL: 0
+; 0000 02DD #ifdef Debugging
+; 0000 02DE         DebugDisplay(0x2,'1');
+; 0000 02DF         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02E0 #endif
+; 0000 02E1         StackPlus(GlcdInitCase2,DelayLabel1);
+;PCODE: $00000321 VOL: 0
+;PCODE: $00000322 VOL: 0
+;PCODE: $00000323 VOL: 0
+;PCODE: $00000324 VOL: 0
+;PCODE: $00000325 VOL: 0
+;PCODE: $00000326 VOL: 0
+;PCODE: $00000327 VOL: 0
+;PCODE: $00000328 VOL: 0
+;PCODE: $00000329 VOL: 0
+;PCODE: $0000032A VOL: 0
+;PCODE: $0000032B VOL: 0
+;PCODE: $0000032C VOL: 0
+; 0000 02E2 #asm
+;PCODE: $0000032D VOL: 0
+; 0000 02E3 GlcdWriteByteLabel4:
+GlcdWriteByteLabel4:
+;PCODE: $0000032E VOL: 0
+;PCODE: $0000032F VOL: 0
+; 0000 02E4 #endasm
+; 0000 02E5 GlcdWriteByteLabel4:
+;PCODE: $00000330 VOL: 0
+; 0000 02E6 #ifdef Debugging
+; 0000 02E7         DebugDisplay(0x3,'4');
+; 0000 02E8         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02E9 #endif
+; 0000 02EA         StackMinus();
+;PCODE: $00000331 VOL: 0
+;PCODE: $00000332 VOL: 0
+;PCODE: $00000333 VOL: 0
+;PCODE: $00000334 VOL: 0
+;PCODE: $00000335 VOL: 0
+;PCODE: $00000336 VOL: 0
+;PCODE: $00000337 VOL: 0
+;PCODE: $00000338 VOL: 0
+;PCODE: $00000339 VOL: 0
+;PCODE: $0000033A VOL: 0
+;PCODE: $0000033B VOL: 0
+;PCODE: $0000033C VOL: 0
+;PCODE: $0000033D VOL: 0
+;PCODE: $0000033E VOL: 0
+;PCODE: $0000033F VOL: 0
+;PCODE: $00000340 VOL: 0
+;PCODE: $00000341 VOL: 0
+	MOV    R30, R2
+;PCODE: $00000342 VOL: 0
+;PCODE: $00000343 VOL: 0
+	MOV    R31, R3
+;PCODE: $00000344 VOL: 0
+;PCODE: $00000345 VOL: 0
+	IJMP
+;PCODE: $00000346 VOL: 0
+;PCODE: $00000347 VOL: 0
+;PCODE: $00000348 VOL: 0
+;PCODE: $00000349 VOL: 0
+;PCODE: $0000034A VOL: 0
+;PCODE: $0000034B VOL: 0
+;PCODE: $0000034C VOL: 0
+;PCODE: $0000034D VOL: 0
+;PCODE: $0000034E VOL: 0
+;PCODE: $0000034F VOL: 0
+;PCODE: $00000350 VOL: 0
+;PCODE: $00000351 VOL: 0
+;PCODE: $00000352 VOL: 0
+; 0000 02EB #asm
+;PCODE: $00000353 VOL: 0
+; 0000 02EC GlcdWriteByteLabel3:
+GlcdWriteByteLabel3:
+;PCODE: $00000354 VOL: 0
+;PCODE: $00000355 VOL: 0
+; 0000 02ED #endasm
+; 0000 02EE GlcdWriteByteLabel3:
+;PCODE: $00000356 VOL: 0
+; 0000 02EF #ifdef Debugging
+; 0000 02F0         DebugDisplay(0x3,'3');
+; 0000 02F1         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02F2 #endif
+; 0000 02F3         set_rs;
+;PCODE: $00000357 VOL: 0
+;PCODE: $00000358 VOL: 0
+;PCODE: $00000359 VOL: 0
+;PCODE: $0000035A VOL: 0
+;PCODE: $0000035B VOL: 0
+;PCODE: $0000035C VOL: 0
+;PCODE: $0000035D VOL: 0
+;PCODE: $0000035E VOL: 0
+;PCODE: $0000035F VOL: 0
+; 0000 02F4         clr_rw;
+;PCODE: $00000360 VOL: 0
+;PCODE: $00000361 VOL: 0
+;PCODE: $00000362 VOL: 0
+;PCODE: $00000363 VOL: 0
+;PCODE: $00000364 VOL: 0
+;PCODE: $00000365 VOL: 0
+;PCODE: $00000366 VOL: 0
+;PCODE: $00000367 VOL: 0
+;PCODE: $00000368 VOL: 0
+;PCODE: $00000369 VOL: 0
+; 0000 02F5         *glcd_data_address = GlcdDataByte;
+;PCODE: $0000036A VOL: 0
+;PCODE: $0000036B VOL: 0
+;PCODE: $0000036C VOL: 0
+; 0000 02F6         StackPlus(GlcdWriteByteCase4,GlcdUnlockLockLabel1);
+;PCODE: $0000036D VOL: 0
+;PCODE: $0000036E VOL: 0
+;PCODE: $0000036F VOL: 0
+;PCODE: $00000370 VOL: 0
+;PCODE: $00000371 VOL: 0
+;PCODE: $00000372 VOL: 0
+;PCODE: $00000373 VOL: 0
+;PCODE: $00000374 VOL: 0
+;PCODE: $00000375 VOL: 0
+;PCODE: $00000376 VOL: 0
+;PCODE: $00000377 VOL: 0
+;PCODE: $00000378 VOL: 0
+; 0000 02F7 #asm
+;PCODE: $00000379 VOL: 0
+; 0000 02F8 GlcdWriteByteLabel2:
+GlcdWriteByteLabel2:
+;PCODE: $0000037A VOL: 0
+;PCODE: $0000037B VOL: 0
+; 0000 02F9 #endasm
+; 0000 02FA GlcdWriteByteLabel2:
+;PCODE: $0000037C VOL: 0
+; 0000 02FB #ifdef Debugging
+; 0000 02FC         DebugDisplay(0x3,'2');
+; 0000 02FD         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 02FE #endif
+; 0000 02FF         clr_rs;
+;PCODE: $0000037D VOL: 0
+;PCODE: $0000037E VOL: 0
+;PCODE: $0000037F VOL: 0
+;PCODE: $00000380 VOL: 0
+;PCODE: $00000381 VOL: 0
+;PCODE: $00000382 VOL: 0
+;PCODE: $00000383 VOL: 0
+;PCODE: $00000384 VOL: 0
+;PCODE: $00000385 VOL: 0
+;PCODE: $00000386 VOL: 0
+; 0000 0300         clr_rw;
+;PCODE: $00000387 VOL: 0
+;PCODE: $00000388 VOL: 0
+;PCODE: $00000389 VOL: 0
+;PCODE: $0000038A VOL: 0
+;PCODE: $0000038B VOL: 0
+;PCODE: $0000038C VOL: 0
+;PCODE: $0000038D VOL: 0
+;PCODE: $0000038E VOL: 0
+;PCODE: $0000038F VOL: 0
+;PCODE: $00000390 VOL: 0
+; 0000 0301         *glcd_data_address = 0x40 | GlcdColumn;
+;PCODE: $00000391 VOL: 0
+;PCODE: $00000392 VOL: 0
+;PCODE: $00000393 VOL: 0
+;PCODE: $00000394 VOL: 0
+; 0000 0302         StackPlus(GlcdWriteByteCase3,GlcdUnlockLockLabel1);
+;PCODE: $00000395 VOL: 0
+;PCODE: $00000396 VOL: 0
+;PCODE: $00000397 VOL: 0
+;PCODE: $00000398 VOL: 0
+;PCODE: $00000399 VOL: 0
+;PCODE: $0000039A VOL: 0
+;PCODE: $0000039B VOL: 0
+;PCODE: $0000039C VOL: 0
+;PCODE: $0000039D VOL: 0
+;PCODE: $0000039E VOL: 0
+;PCODE: $0000039F VOL: 0
+;PCODE: $000003A0 VOL: 0
+; 0000 0303 #asm
+;PCODE: $000003A1 VOL: 0
+; 0000 0304 GlcdWriteByteLabel1:
+GlcdWriteByteLabel1:
+;PCODE: $000003A2 VOL: 0
+;PCODE: $000003A3 VOL: 0
+; 0000 0305 #endasm
+; 0000 0306 GlcdWriteByteLabel1:
+;PCODE: $000003A4 VOL: 0
+; 0000 0307 #ifdef Debugging
+; 0000 0308         DebugDisplay(0x3,'1');
+; 0000 0309         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 030A #endif
+; 0000 030B         if(GlcdColumn >= 64)
+;PCODE: $000003A5 VOL: 0
+;PCODE: $000003A6 VOL: 0
+;PCODE: $000003A7 VOL: 0
+; 0000 030C         {
+; 0000 030D             clr_cs1;
+;PCODE: $000003A8 VOL: 0
+;PCODE: $000003A9 VOL: 0
+;PCODE: $000003AA VOL: 0
+;PCODE: $000003AB VOL: 0
+;PCODE: $000003AC VOL: 0
+;PCODE: $000003AD VOL: 0
+;PCODE: $000003AE VOL: 0
+;PCODE: $000003AF VOL: 0
+;PCODE: $000003B0 VOL: 0
+;PCODE: $000003B1 VOL: 0
+; 0000 030E             set_cs2;
+;PCODE: $000003B2 VOL: 0
+;PCODE: $000003B3 VOL: 0
+;PCODE: $000003B4 VOL: 0
+;PCODE: $000003B5 VOL: 0
+;PCODE: $000003B6 VOL: 0
+;PCODE: $000003B7 VOL: 0
+;PCODE: $000003B8 VOL: 0
+;PCODE: $000003B9 VOL: 0
+;PCODE: $000003BA VOL: 0
+; 0000 030F         }
+; 0000 0310         else
+;PCODE: $000003BB VOL: 0
+;PCODE: $000003BC VOL: 0
+; 0000 0311         {
+; 0000 0312             set_cs1;
+;PCODE: $000003BD VOL: 0
+;PCODE: $000003BE VOL: 0
+;PCODE: $000003BF VOL: 0
+;PCODE: $000003C0 VOL: 0
+;PCODE: $000003C1 VOL: 0
+;PCODE: $000003C2 VOL: 0
+;PCODE: $000003C3 VOL: 0
+;PCODE: $000003C4 VOL: 0
+;PCODE: $000003C5 VOL: 0
+; 0000 0313             clr_cs2;
+;PCODE: $000003C6 VOL: 0
+;PCODE: $000003C7 VOL: 0
+;PCODE: $000003C8 VOL: 0
+;PCODE: $000003C9 VOL: 0
+;PCODE: $000003CA VOL: 0
+;PCODE: $000003CB VOL: 0
+;PCODE: $000003CC VOL: 0
+;PCODE: $000003CD VOL: 0
+;PCODE: $000003CE VOL: 0
+;PCODE: $000003CF VOL: 0
+; 0000 0314         }
+;PCODE: $000003D0 VOL: 0
+; 0000 0315         clr_rs;
+;PCODE: $000003D1 VOL: 0
+;PCODE: $000003D2 VOL: 0
+;PCODE: $000003D3 VOL: 0
+;PCODE: $000003D4 VOL: 0
+;PCODE: $000003D5 VOL: 0
+;PCODE: $000003D6 VOL: 0
+;PCODE: $000003D7 VOL: 0
+;PCODE: $000003D8 VOL: 0
+;PCODE: $000003D9 VOL: 0
+;PCODE: $000003DA VOL: 0
+; 0000 0316         clr_rw;
+;PCODE: $000003DB VOL: 0
+;PCODE: $000003DC VOL: 0
+;PCODE: $000003DD VOL: 0
+;PCODE: $000003DE VOL: 0
+;PCODE: $000003DF VOL: 0
+;PCODE: $000003E0 VOL: 0
+;PCODE: $000003E1 VOL: 0
+;PCODE: $000003E2 VOL: 0
+;PCODE: $000003E3 VOL: 0
+;PCODE: $000003E4 VOL: 0
+; 0000 0317         *glcd_data_address = 0xB8 | GlcdPage;
+;PCODE: $000003E5 VOL: 0
+;PCODE: $000003E6 VOL: 0
+;PCODE: $000003E7 VOL: 0
+;PCODE: $000003E8 VOL: 0
+; 0000 0318         StackPlus(GlcdWriteByteCase2,GlcdUnlockLockLabel1);
+;PCODE: $000003E9 VOL: 0
+;PCODE: $000003EA VOL: 0
+;PCODE: $000003EB VOL: 0
+;PCODE: $000003EC VOL: 0
+;PCODE: $000003ED VOL: 0
+;PCODE: $000003EE VOL: 0
+;PCODE: $000003EF VOL: 0
+;PCODE: $000003F0 VOL: 0
+;PCODE: $000003F1 VOL: 0
+;PCODE: $000003F2 VOL: 0
+;PCODE: $000003F3 VOL: 0
+;PCODE: $000003F4 VOL: 0
+; 0000 0319 #asm
+;PCODE: $000003F5 VOL: 0
+; 0000 031A GlcdClearPageLabel2:
+GlcdClearPageLabel2:
+;PCODE: $000003F6 VOL: 0
+;PCODE: $000003F7 VOL: 0
+; 0000 031B #endasm
+; 0000 031C GlcdClearPageLabel2:
+;PCODE: $000003F8 VOL: 0
+; 0000 031D #ifdef Debugging
+; 0000 031E         DebugDisplay(0x4,'2');
+; 0000 031F         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0320 #endif
+; 0000 0321         GlcdColumn++;
+;PCODE: $000003F9 VOL: 0
+;PCODE: $000003FA VOL: 0
+;PCODE: $000003FB VOL: 0
+; 0000 0322         if (GlcdColumn < 128)
+;PCODE: $000003FC VOL: 0
+;PCODE: $000003FD VOL: 0
+;PCODE: $000003FE VOL: 0
+; 0000 0323             StackPlus(GlcdClearPageCase2,GlcdWriteByteLabel1);
+;PCODE: $000003FF VOL: 0
+;PCODE: $00000400 VOL: 0
+;PCODE: $00000401 VOL: 0
+;PCODE: $00000402 VOL: 0
+;PCODE: $00000403 VOL: 0
+;PCODE: $00000404 VOL: 0
+;PCODE: $00000405 VOL: 0
+;PCODE: $00000406 VOL: 0
+;PCODE: $00000407 VOL: 0
+;PCODE: $00000408 VOL: 0
+;PCODE: $00000409 VOL: 0
+;PCODE: $0000040A VOL: 0
+; 0000 0324         else
+;PCODE: $0000040B VOL: 0
+;PCODE: $0000040C VOL: 0
+; 0000 0325         {
+; 0000 0326             StackMinus();
+;PCODE: $0000040D VOL: 0
+;PCODE: $0000040E VOL: 0
+;PCODE: $0000040F VOL: 0
+;PCODE: $00000410 VOL: 0
+;PCODE: $00000411 VOL: 0
+;PCODE: $00000412 VOL: 0
+;PCODE: $00000413 VOL: 0
+;PCODE: $00000414 VOL: 0
+;PCODE: $00000415 VOL: 0
+;PCODE: $00000416 VOL: 0
+;PCODE: $00000417 VOL: 0
+;PCODE: $00000418 VOL: 0
+;PCODE: $00000419 VOL: 0
+;PCODE: $0000041A VOL: 0
+;PCODE: $0000041B VOL: 0
+;PCODE: $0000041C VOL: 0
+;PCODE: $0000041D VOL: 0
+	MOV    R30, R2
+;PCODE: $0000041E VOL: 0
+;PCODE: $0000041F VOL: 0
+	MOV    R31, R3
+;PCODE: $00000420 VOL: 0
+;PCODE: $00000421 VOL: 0
+	IJMP
+;PCODE: $00000422 VOL: 0
+;PCODE: $00000423 VOL: 0
+;PCODE: $00000424 VOL: 0
+;PCODE: $00000425 VOL: 0
+;PCODE: $00000426 VOL: 0
+;PCODE: $00000427 VOL: 0
+;PCODE: $00000428 VOL: 0
+;PCODE: $00000429 VOL: 0
+;PCODE: $0000042A VOL: 0
+;PCODE: $0000042B VOL: 0
+;PCODE: $0000042C VOL: 0
+;PCODE: $0000042D VOL: 0
+;PCODE: $0000042E VOL: 0
+; 0000 0327         }
+;PCODE: $0000042F VOL: 0
+; 0000 0328 #asm
+;PCODE: $00000430 VOL: 0
+; 0000 0329 GlcdClearPageLabel1:
+GlcdClearPageLabel1:
+;PCODE: $00000431 VOL: 0
+;PCODE: $00000432 VOL: 0
+; 0000 032A #endasm
+; 0000 032B GlcdClearPageLabel1:
+;PCODE: $00000433 VOL: 0
+; 0000 032C #ifdef Debugging
+; 0000 032D         DebugDisplay(0x4,'1');
+; 0000 032E         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 032F #endif
+; 0000 0330         GlcdColumn = 0;
+;PCODE: $00000434 VOL: 0
+;PCODE: $00000435 VOL: 0
+; 0000 0331         GlcdDataByte = 0x00;
+;PCODE: $00000436 VOL: 0
+;PCODE: $00000437 VOL: 0
+; 0000 0332         StackPlus(GlcdClearPageCase2,GlcdWriteByteLabel1);
+;PCODE: $00000438 VOL: 0
+;PCODE: $00000439 VOL: 0
+;PCODE: $0000043A VOL: 0
+;PCODE: $0000043B VOL: 0
+;PCODE: $0000043C VOL: 0
+;PCODE: $0000043D VOL: 0
+;PCODE: $0000043E VOL: 0
+;PCODE: $0000043F VOL: 0
+;PCODE: $00000440 VOL: 0
+;PCODE: $00000441 VOL: 0
+;PCODE: $00000442 VOL: 0
+;PCODE: $00000443 VOL: 0
+; 0000 0333 #asm
+;PCODE: $00000444 VOL: 0
+; 0000 0334 GlcdPutcharLabel2:
+GlcdPutcharLabel2:
+;PCODE: $00000445 VOL: 0
+;PCODE: $00000446 VOL: 0
+; 0000 0335 #endasm
+; 0000 0336 GlcdPutcharLabel2:
+;PCODE: $00000447 VOL: 0
+; 0000 0337 #ifdef Debugging
+; 0000 0338         DebugDisplay(0x5,'2');
+; 0000 0339         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 033A #endif
+; 0000 033B         if (++i < 6)
+;PCODE: $00000448 VOL: 0
+;PCODE: $00000449 VOL: 0
+;PCODE: $0000044A VOL: 0
+;PCODE: $0000044B VOL: 0
+;PCODE: $0000044C VOL: 0
+; 0000 033C         {
+; 0000 033D             GlcdDataByte = glcd_font[GlcdChar][i];
+;PCODE: $0000044D VOL: 0
+;PCODE: $0000044E VOL: 0
+;PCODE: $0000044F VOL: 0
+;PCODE: $00000450 VOL: 0
+;PCODE: $00000451 VOL: 0
+;PCODE: $00000452 VOL: 0
+;PCODE: $00000453 VOL: 0
+;PCODE: $00000454 VOL: 0
+;PCODE: $00000455 VOL: 0
+;PCODE: $00000456 VOL: 0
+; 0000 033E             GlcdColumn++;
+;PCODE: $00000457 VOL: 0
+;PCODE: $00000458 VOL: 0
+;PCODE: $00000459 VOL: 0
+; 0000 033F             StackPlus(GlcdPutcharCase2,GlcdWriteByteLabel1);
+;PCODE: $0000045A VOL: 0
+;PCODE: $0000045B VOL: 0
+;PCODE: $0000045C VOL: 0
+;PCODE: $0000045D VOL: 0
+;PCODE: $0000045E VOL: 0
+;PCODE: $0000045F VOL: 0
+;PCODE: $00000460 VOL: 0
+;PCODE: $00000461 VOL: 0
+;PCODE: $00000462 VOL: 0
+;PCODE: $00000463 VOL: 0
+;PCODE: $00000464 VOL: 0
+;PCODE: $00000465 VOL: 0
+; 0000 0340         }
+; 0000 0341         else
+;PCODE: $00000466 VOL: 0
+;PCODE: $00000467 VOL: 0
+; 0000 0342         {
+; 0000 0343             StackMinus();
+;PCODE: $00000468 VOL: 0
+;PCODE: $00000469 VOL: 0
+;PCODE: $0000046A VOL: 0
+;PCODE: $0000046B VOL: 0
+;PCODE: $0000046C VOL: 0
+;PCODE: $0000046D VOL: 0
+;PCODE: $0000046E VOL: 0
+;PCODE: $0000046F VOL: 0
+;PCODE: $00000470 VOL: 0
+;PCODE: $00000471 VOL: 0
+;PCODE: $00000472 VOL: 0
+;PCODE: $00000473 VOL: 0
+;PCODE: $00000474 VOL: 0
+;PCODE: $00000475 VOL: 0
+;PCODE: $00000476 VOL: 0
+;PCODE: $00000477 VOL: 0
+;PCODE: $00000478 VOL: 0
+	MOV    R30, R2
+;PCODE: $00000479 VOL: 0
+;PCODE: $0000047A VOL: 0
+	MOV    R31, R3
+;PCODE: $0000047B VOL: 0
+;PCODE: $0000047C VOL: 0
+	IJMP
+;PCODE: $0000047D VOL: 0
+;PCODE: $0000047E VOL: 0
+;PCODE: $0000047F VOL: 0
+;PCODE: $00000480 VOL: 0
+;PCODE: $00000481 VOL: 0
+;PCODE: $00000482 VOL: 0
+;PCODE: $00000483 VOL: 0
+;PCODE: $00000484 VOL: 0
+;PCODE: $00000485 VOL: 0
+;PCODE: $00000486 VOL: 0
+;PCODE: $00000487 VOL: 0
+;PCODE: $00000488 VOL: 0
+;PCODE: $00000489 VOL: 0
+; 0000 0344         }
+;PCODE: $0000048A VOL: 0
+; 0000 0345 #asm
+;PCODE: $0000048B VOL: 0
+; 0000 0346 GlcdPutcharLabel1:
+GlcdPutcharLabel1:
+;PCODE: $0000048C VOL: 0
+;PCODE: $0000048D VOL: 0
+; 0000 0347 #endasm
+; 0000 0348 GlcdPutcharLabel1:
+;PCODE: $0000048E VOL: 0
+; 0000 0349 #ifdef Debugging
+; 0000 034A         DebugDisplay(0x5,'1');
+; 0000 034B         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 034C #endif
+; 0000 034D         i = 0;
+;PCODE: $0000048F VOL: 0
+;PCODE: $00000490 VOL: 0
+; 0000 034E         GlcdChar -= 0x20;
+;PCODE: $00000491 VOL: 0
+;PCODE: $00000492 VOL: 0
+;PCODE: $00000493 VOL: 0
+;PCODE: $00000494 VOL: 0
+; 0000 034F         GlcdDataByte = glcd_font[GlcdChar][0];
+;PCODE: $00000495 VOL: 0
+;PCODE: $00000496 VOL: 0
+;PCODE: $00000497 VOL: 0
+;PCODE: $00000498 VOL: 0
+;PCODE: $00000499 VOL: 0
+;PCODE: $0000049A VOL: 0
+; 0000 0350         StackPlus(GlcdPutcharCase2,GlcdWriteByteLabel1);
+;PCODE: $0000049B VOL: 0
+;PCODE: $0000049C VOL: 0
+;PCODE: $0000049D VOL: 0
+;PCODE: $0000049E VOL: 0
+;PCODE: $0000049F VOL: 0
+;PCODE: $000004A0 VOL: 0
+;PCODE: $000004A1 VOL: 0
+;PCODE: $000004A2 VOL: 0
+;PCODE: $000004A3 VOL: 0
+;PCODE: $000004A4 VOL: 0
+;PCODE: $000004A5 VOL: 0
+;PCODE: $000004A6 VOL: 0
+; 0000 0351 #asm
+;PCODE: $000004A7 VOL: 0
+; 0000 0352 GlcdPutsLabel2:
+GlcdPutsLabel2:
+;PCODE: $000004A8 VOL: 0
+;PCODE: $000004A9 VOL: 0
+; 0000 0353 #endasm
+; 0000 0354 GlcdPutsLabel2:
+;PCODE: $000004AA VOL: 0
+; 0000 0355 #ifdef Debugging
+; 0000 0356         DebugDisplay(0x6,'2');
+; 0000 0357         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0358 #endif
+; 0000 0359         if (*GlcdString)
+;PCODE: $000004AB VOL: 0
+;PCODE: $000004AC VOL: 0
+;PCODE: $000004AD VOL: 0
+;PCODE: $000004AE VOL: 0
+; 0000 035A         {
+; 0000 035B             GlcdColumn++;
+;PCODE: $000004AF VOL: 0
+;PCODE: $000004B0 VOL: 0
+;PCODE: $000004B1 VOL: 0
+; 0000 035C             GlcdChar = *GlcdString++;
+;PCODE: $000004B2 VOL: 0
+;PCODE: $000004B3 VOL: 0
+;PCODE: $000004B4 VOL: 0
+;PCODE: $000004B5 VOL: 0
+;PCODE: $000004B6 VOL: 0
+;PCODE: $000004B7 VOL: 0
+;PCODE: $000004B8 VOL: 0
+; 0000 035D             StackPlus(GlcdPutsCase2,GlcdPutcharLabel1);
+;PCODE: $000004B9 VOL: 0
+;PCODE: $000004BA VOL: 0
+;PCODE: $000004BB VOL: 0
+;PCODE: $000004BC VOL: 0
+;PCODE: $000004BD VOL: 0
+;PCODE: $000004BE VOL: 0
+;PCODE: $000004BF VOL: 0
+;PCODE: $000004C0 VOL: 0
+;PCODE: $000004C1 VOL: 0
+;PCODE: $000004C2 VOL: 0
+;PCODE: $000004C3 VOL: 0
+;PCODE: $000004C4 VOL: 0
+; 0000 035E         }
+; 0000 035F         else
+;PCODE: $000004C5 VOL: 0
+;PCODE: $000004C6 VOL: 0
+; 0000 0360         {
+; 0000 0361             StackMinus();
+;PCODE: $000004C7 VOL: 0
+;PCODE: $000004C8 VOL: 0
+;PCODE: $000004C9 VOL: 0
+;PCODE: $000004CA VOL: 0
+;PCODE: $000004CB VOL: 0
+;PCODE: $000004CC VOL: 0
+;PCODE: $000004CD VOL: 0
+;PCODE: $000004CE VOL: 0
+;PCODE: $000004CF VOL: 0
+;PCODE: $000004D0 VOL: 0
+;PCODE: $000004D1 VOL: 0
+;PCODE: $000004D2 VOL: 0
+;PCODE: $000004D3 VOL: 0
+;PCODE: $000004D4 VOL: 0
+;PCODE: $000004D5 VOL: 0
+;PCODE: $000004D6 VOL: 0
+;PCODE: $000004D7 VOL: 0
+	MOV    R30, R2
+;PCODE: $000004D8 VOL: 0
+;PCODE: $000004D9 VOL: 0
+	MOV    R31, R3
+;PCODE: $000004DA VOL: 0
+;PCODE: $000004DB VOL: 0
+	IJMP
+;PCODE: $000004DC VOL: 0
+;PCODE: $000004DD VOL: 0
+;PCODE: $000004DE VOL: 0
+;PCODE: $000004DF VOL: 0
+;PCODE: $000004E0 VOL: 0
+;PCODE: $000004E1 VOL: 0
+;PCODE: $000004E2 VOL: 0
+;PCODE: $000004E3 VOL: 0
+;PCODE: $000004E4 VOL: 0
+;PCODE: $000004E5 VOL: 0
+;PCODE: $000004E6 VOL: 0
+;PCODE: $000004E7 VOL: 0
+;PCODE: $000004E8 VOL: 0
+; 0000 0362         }
+;PCODE: $000004E9 VOL: 0
+; 0000 0363 #asm
+;PCODE: $000004EA VOL: 0
+; 0000 0364 GlcdPutsLabel1:
+GlcdPutsLabel1:
+;PCODE: $000004EB VOL: 0
+;PCODE: $000004EC VOL: 0
+; 0000 0365 #endasm
+; 0000 0366 GlcdPutsLabel1:
+;PCODE: $000004ED VOL: 0
+; 0000 0367 #ifdef Debugging
+; 0000 0368         DebugDisplay(0x6,'1');
+; 0000 0369         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 036A #endif
+; 0000 036B         if (*GlcdString)
+;PCODE: $000004EE VOL: 0
+;PCODE: $000004EF VOL: 0
+;PCODE: $000004F0 VOL: 0
+;PCODE: $000004F1 VOL: 0
+; 0000 036C         {
+; 0000 036D             GlcdChar = *GlcdString++;
+;PCODE: $000004F2 VOL: 0
+;PCODE: $000004F3 VOL: 0
+;PCODE: $000004F4 VOL: 0
+;PCODE: $000004F5 VOL: 0
+;PCODE: $000004F6 VOL: 0
+;PCODE: $000004F7 VOL: 0
+;PCODE: $000004F8 VOL: 0
+; 0000 036E             StackPlus(GlcdPutsCase2,GlcdPutcharLabel1);
+;PCODE: $000004F9 VOL: 0
+;PCODE: $000004FA VOL: 0
+;PCODE: $000004FB VOL: 0
+;PCODE: $000004FC VOL: 0
+;PCODE: $000004FD VOL: 0
+;PCODE: $000004FE VOL: 0
+;PCODE: $000004FF VOL: 0
+;PCODE: $00000500 VOL: 0
+;PCODE: $00000501 VOL: 0
+;PCODE: $00000502 VOL: 0
+;PCODE: $00000503 VOL: 0
+;PCODE: $00000504 VOL: 0
+; 0000 036F         }
+; 0000 0370         else
+;PCODE: $00000505 VOL: 0
+;PCODE: $00000506 VOL: 0
+; 0000 0371         {
+; 0000 0372             StackMinus();
+;PCODE: $00000507 VOL: 0
+;PCODE: $00000508 VOL: 0
+;PCODE: $00000509 VOL: 0
+;PCODE: $0000050A VOL: 0
+;PCODE: $0000050B VOL: 0
+;PCODE: $0000050C VOL: 0
+;PCODE: $0000050D VOL: 0
+;PCODE: $0000050E VOL: 0
+;PCODE: $0000050F VOL: 0
+;PCODE: $00000510 VOL: 0
+;PCODE: $00000511 VOL: 0
+;PCODE: $00000512 VOL: 0
+;PCODE: $00000513 VOL: 0
+;PCODE: $00000514 VOL: 0
+;PCODE: $00000515 VOL: 0
+;PCODE: $00000516 VOL: 0
+;PCODE: $00000517 VOL: 0
+	MOV    R30, R2
+;PCODE: $00000518 VOL: 0
+;PCODE: $00000519 VOL: 0
+	MOV    R31, R3
+;PCODE: $0000051A VOL: 0
+;PCODE: $0000051B VOL: 0
+	IJMP
+;PCODE: $0000051C VOL: 0
+;PCODE: $0000051D VOL: 0
+;PCODE: $0000051E VOL: 0
+;PCODE: $0000051F VOL: 0
+;PCODE: $00000520 VOL: 0
+;PCODE: $00000521 VOL: 0
+;PCODE: $00000522 VOL: 0
+;PCODE: $00000523 VOL: 0
+;PCODE: $00000524 VOL: 0
+;PCODE: $00000525 VOL: 0
+;PCODE: $00000526 VOL: 0
+;PCODE: $00000527 VOL: 0
+;PCODE: $00000528 VOL: 0
+; 0000 0373         }
+;PCODE: $00000529 VOL: 0
+; 0000 0374 #asm
+;PCODE: $0000052A VOL: 0
+; 0000 0375 GlcdPutsCenterLabel2:
+GlcdPutsCenterLabel2:
+;PCODE: $0000052B VOL: 0
+;PCODE: $0000052C VOL: 0
+; 0000 0376 #endasm
+; 0000 0377 GlcdPutsCenterLabel2:
+;PCODE: $0000052D VOL: 0
+; 0000 0378 #ifdef Debugging
+; 0000 0379         DebugDisplay(0x7,'2');
+; 0000 037A         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 037B #endif
+; 0000 037C         StackMinus();
+;PCODE: $0000052E VOL: 0
+;PCODE: $0000052F VOL: 0
+;PCODE: $00000530 VOL: 0
+;PCODE: $00000531 VOL: 0
+;PCODE: $00000532 VOL: 0
+;PCODE: $00000533 VOL: 0
+;PCODE: $00000534 VOL: 0
+;PCODE: $00000535 VOL: 0
+;PCODE: $00000536 VOL: 0
+;PCODE: $00000537 VOL: 0
+;PCODE: $00000538 VOL: 0
+;PCODE: $00000539 VOL: 0
+;PCODE: $0000053A VOL: 0
+;PCODE: $0000053B VOL: 0
+;PCODE: $0000053C VOL: 0
+;PCODE: $0000053D VOL: 0
+;PCODE: $0000053E VOL: 0
+	MOV    R30, R2
+;PCODE: $0000053F VOL: 0
+;PCODE: $00000540 VOL: 0
+	MOV    R31, R3
+;PCODE: $00000541 VOL: 0
+;PCODE: $00000542 VOL: 0
+	IJMP
+;PCODE: $00000543 VOL: 0
+;PCODE: $00000544 VOL: 0
+;PCODE: $00000545 VOL: 0
+;PCODE: $00000546 VOL: 0
+;PCODE: $00000547 VOL: 0
+;PCODE: $00000548 VOL: 0
+;PCODE: $00000549 VOL: 0
+;PCODE: $0000054A VOL: 0
+;PCODE: $0000054B VOL: 0
+;PCODE: $0000054C VOL: 0
+;PCODE: $0000054D VOL: 0
+;PCODE: $0000054E VOL: 0
+;PCODE: $0000054F VOL: 0
+; 0000 037D #asm
+;PCODE: $00000550 VOL: 0
+; 0000 037E GlcdPutsCenterLabel1:
+GlcdPutsCenterLabel1:
+;PCODE: $00000551 VOL: 0
+;PCODE: $00000552 VOL: 0
+; 0000 037F #endasm
+; 0000 0380 GlcdPutsCenterLabel1:
+;PCODE: $00000553 VOL: 0
+; 0000 0381 #ifdef Debugging
+; 0000 0382         DebugDisplay(0x7,'1');
+; 0000 0383         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0384 #endif
+; 0000 0385         i = strlen_char(GlcdString);
+;PCODE: $00000554 VOL: 0
+;PCODE: $00000555 VOL: 0
+;PCODE: $00000556 VOL: 0
+;PCODE: $00000557 VOL: 0
+; 0000 0386         i = i * 6;
+;PCODE: $00000558 VOL: 0
+;PCODE: $00000559 VOL: 0
+;PCODE: $0000055A VOL: 0
+;PCODE: $0000055B VOL: 0
+; 0000 0387         i = 128 - i;
+;PCODE: $0000055C VOL: 0
+;PCODE: $0000055D VOL: 0
+;PCODE: $0000055E VOL: 0
+;PCODE: $0000055F VOL: 0
+;PCODE: $00000560 VOL: 0
+;PCODE: $00000561 VOL: 0
+; 0000 0388         GlcdColumn = i / 2;
+;PCODE: $00000562 VOL: 0
+;PCODE: $00000563 VOL: 0
+;PCODE: $00000564 VOL: 0
+;PCODE: $00000565 VOL: 0
+;PCODE: $00000566 VOL: 0
+; 0000 0389         StackPlus(GlcdPutsCenterCase2,GlcdPutsLabel1);
+;PCODE: $00000567 VOL: 0
+;PCODE: $00000568 VOL: 0
+;PCODE: $00000569 VOL: 0
+;PCODE: $0000056A VOL: 0
+;PCODE: $0000056B VOL: 0
+;PCODE: $0000056C VOL: 0
+;PCODE: $0000056D VOL: 0
+;PCODE: $0000056E VOL: 0
+;PCODE: $0000056F VOL: 0
+;PCODE: $00000570 VOL: 0
+;PCODE: $00000571 VOL: 0
+;PCODE: $00000572 VOL: 0
+; 0000 038A #asm
+;PCODE: $00000573 VOL: 0
+; 0000 038B GlcdPutsfLabel2:
+GlcdPutsfLabel2:
+;PCODE: $00000574 VOL: 0
+;PCODE: $00000575 VOL: 0
+; 0000 038C #endasm
+; 0000 038D GlcdPutsfLabel2:
+;PCODE: $00000576 VOL: 0
+; 0000 038E #ifdef Debugging
+; 0000 038F         DebugDisplay(0x8,'2');
+; 0000 0390         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 0391 #endif
+; 0000 0392         if (*GlcdFlashString)
+;PCODE: $00000577 VOL: 0
+;PCODE: $00000578 VOL: 0
+;PCODE: $00000579 VOL: 0
+;PCODE: $0000057A VOL: 0
+; 0000 0393         {
+; 0000 0394             GlcdColumn++;
+;PCODE: $0000057B VOL: 0
+;PCODE: $0000057C VOL: 0
+;PCODE: $0000057D VOL: 0
+; 0000 0395             GlcdChar = *GlcdFlashString++;
+;PCODE: $0000057E VOL: 0
+;PCODE: $0000057F VOL: 0
+;PCODE: $00000580 VOL: 0
+;PCODE: $00000581 VOL: 0
+;PCODE: $00000582 VOL: 0
+;PCODE: $00000583 VOL: 0
+;PCODE: $00000584 VOL: 0
+; 0000 0396             StackPlus(GlcdPutsfCase2,GlcdPutcharLabel1);
+;PCODE: $00000585 VOL: 0
+;PCODE: $00000586 VOL: 0
+;PCODE: $00000587 VOL: 0
+;PCODE: $00000588 VOL: 0
+;PCODE: $00000589 VOL: 0
+;PCODE: $0000058A VOL: 0
+;PCODE: $0000058B VOL: 0
+;PCODE: $0000058C VOL: 0
+;PCODE: $0000058D VOL: 0
+;PCODE: $0000058E VOL: 0
+;PCODE: $0000058F VOL: 0
+;PCODE: $00000590 VOL: 0
+; 0000 0397         }
+; 0000 0398         else
+;PCODE: $00000591 VOL: 0
+;PCODE: $00000592 VOL: 0
+; 0000 0399         {
+; 0000 039A             StackMinus();
+;PCODE: $00000593 VOL: 0
+;PCODE: $00000594 VOL: 0
+;PCODE: $00000595 VOL: 0
+;PCODE: $00000596 VOL: 0
+;PCODE: $00000597 VOL: 0
+;PCODE: $00000598 VOL: 0
+;PCODE: $00000599 VOL: 0
+;PCODE: $0000059A VOL: 0
+;PCODE: $0000059B VOL: 0
+;PCODE: $0000059C VOL: 0
+;PCODE: $0000059D VOL: 0
+;PCODE: $0000059E VOL: 0
+;PCODE: $0000059F VOL: 0
+;PCODE: $000005A0 VOL: 0
+;PCODE: $000005A1 VOL: 0
+;PCODE: $000005A2 VOL: 0
+;PCODE: $000005A3 VOL: 0
+	MOV    R30, R2
+;PCODE: $000005A4 VOL: 0
+;PCODE: $000005A5 VOL: 0
+	MOV    R31, R3
+;PCODE: $000005A6 VOL: 0
+;PCODE: $000005A7 VOL: 0
+	IJMP
+;PCODE: $000005A8 VOL: 0
+;PCODE: $000005A9 VOL: 0
+;PCODE: $000005AA VOL: 0
+;PCODE: $000005AB VOL: 0
+;PCODE: $000005AC VOL: 0
+;PCODE: $000005AD VOL: 0
+;PCODE: $000005AE VOL: 0
+;PCODE: $000005AF VOL: 0
+;PCODE: $000005B0 VOL: 0
+;PCODE: $000005B1 VOL: 0
+;PCODE: $000005B2 VOL: 0
+;PCODE: $000005B3 VOL: 0
+;PCODE: $000005B4 VOL: 0
+; 0000 039B         }
+;PCODE: $000005B5 VOL: 0
+; 0000 039C #asm
+;PCODE: $000005B6 VOL: 0
+; 0000 039D GlcdPutsfLabel1:
+GlcdPutsfLabel1:
+;PCODE: $000005B7 VOL: 0
+;PCODE: $000005B8 VOL: 0
+; 0000 039E #endasm
+; 0000 039F GlcdPutsfLabel1:
+;PCODE: $000005B9 VOL: 0
+; 0000 03A0 #ifdef Debugging
+; 0000 03A1         DebugDisplay(0x8,'1');
+; 0000 03A2         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03A3 #endif
+; 0000 03A4         if (*GlcdFlashString)
+;PCODE: $000005BA VOL: 0
+;PCODE: $000005BB VOL: 0
+;PCODE: $000005BC VOL: 0
+;PCODE: $000005BD VOL: 0
+; 0000 03A5         {
+; 0000 03A6             GlcdChar = *GlcdFlashString++;
+;PCODE: $000005BE VOL: 0
+;PCODE: $000005BF VOL: 0
+;PCODE: $000005C0 VOL: 0
+;PCODE: $000005C1 VOL: 0
+;PCODE: $000005C2 VOL: 0
+;PCODE: $000005C3 VOL: 0
+;PCODE: $000005C4 VOL: 0
+; 0000 03A7             StackPlus(GlcdPutsfCase2,GlcdPutcharLabel1);
+;PCODE: $000005C5 VOL: 0
+;PCODE: $000005C6 VOL: 0
+;PCODE: $000005C7 VOL: 0
+;PCODE: $000005C8 VOL: 0
+;PCODE: $000005C9 VOL: 0
+;PCODE: $000005CA VOL: 0
+;PCODE: $000005CB VOL: 0
+;PCODE: $000005CC VOL: 0
+;PCODE: $000005CD VOL: 0
+;PCODE: $000005CE VOL: 0
+;PCODE: $000005CF VOL: 0
+;PCODE: $000005D0 VOL: 0
+; 0000 03A8         }
+; 0000 03A9         else
+;PCODE: $000005D1 VOL: 0
+;PCODE: $000005D2 VOL: 0
+; 0000 03AA         {
+; 0000 03AB             StackMinus();
+;PCODE: $000005D3 VOL: 0
+;PCODE: $000005D4 VOL: 0
+;PCODE: $000005D5 VOL: 0
+;PCODE: $000005D6 VOL: 0
+;PCODE: $000005D7 VOL: 0
+;PCODE: $000005D8 VOL: 0
+;PCODE: $000005D9 VOL: 0
+;PCODE: $000005DA VOL: 0
+;PCODE: $000005DB VOL: 0
+;PCODE: $000005DC VOL: 0
+;PCODE: $000005DD VOL: 0
+;PCODE: $000005DE VOL: 0
+;PCODE: $000005DF VOL: 0
+;PCODE: $000005E0 VOL: 0
+;PCODE: $000005E1 VOL: 0
+;PCODE: $000005E2 VOL: 0
+;PCODE: $000005E3 VOL: 0
+	MOV    R30, R2
+;PCODE: $000005E4 VOL: 0
+;PCODE: $000005E5 VOL: 0
+	MOV    R31, R3
+;PCODE: $000005E6 VOL: 0
+;PCODE: $000005E7 VOL: 0
+	IJMP
+;PCODE: $000005E8 VOL: 0
+;PCODE: $000005E9 VOL: 0
+;PCODE: $000005EA VOL: 0
+;PCODE: $000005EB VOL: 0
+;PCODE: $000005EC VOL: 0
+;PCODE: $000005ED VOL: 0
+;PCODE: $000005EE VOL: 0
+;PCODE: $000005EF VOL: 0
+;PCODE: $000005F0 VOL: 0
+;PCODE: $000005F1 VOL: 0
+;PCODE: $000005F2 VOL: 0
+;PCODE: $000005F3 VOL: 0
+;PCODE: $000005F4 VOL: 0
+; 0000 03AC         }
+;PCODE: $000005F5 VOL: 0
+; 0000 03AD #asm
+;PCODE: $000005F6 VOL: 0
+; 0000 03AE GlcdPutsfCenterLabel2:
+GlcdPutsfCenterLabel2:
+;PCODE: $000005F7 VOL: 0
+;PCODE: $000005F8 VOL: 0
+; 0000 03AF #endasm
+; 0000 03B0 GlcdPutsfCenterLabel2:
+;PCODE: $000005F9 VOL: 0
+; 0000 03B1 #ifdef Debugging
+; 0000 03B2         DebugDisplay(0x9,'2');
+; 0000 03B3         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03B4 #endif
+; 0000 03B5         StackMinus();
+;PCODE: $000005FA VOL: 0
+;PCODE: $000005FB VOL: 0
+;PCODE: $000005FC VOL: 0
+;PCODE: $000005FD VOL: 0
+;PCODE: $000005FE VOL: 0
+;PCODE: $000005FF VOL: 0
+;PCODE: $00000600 VOL: 0
+;PCODE: $00000601 VOL: 0
+;PCODE: $00000602 VOL: 0
+;PCODE: $00000603 VOL: 0
+;PCODE: $00000604 VOL: 0
+;PCODE: $00000605 VOL: 0
+;PCODE: $00000606 VOL: 0
+;PCODE: $00000607 VOL: 0
+;PCODE: $00000608 VOL: 0
+;PCODE: $00000609 VOL: 0
+;PCODE: $0000060A VOL: 0
+	MOV    R30, R2
+;PCODE: $0000060B VOL: 0
+;PCODE: $0000060C VOL: 0
+	MOV    R31, R3
+;PCODE: $0000060D VOL: 0
+;PCODE: $0000060E VOL: 0
+	IJMP
+;PCODE: $0000060F VOL: 0
+;PCODE: $00000610 VOL: 0
+;PCODE: $00000611 VOL: 0
+;PCODE: $00000612 VOL: 0
+;PCODE: $00000613 VOL: 0
+;PCODE: $00000614 VOL: 0
+;PCODE: $00000615 VOL: 0
+;PCODE: $00000616 VOL: 0
+;PCODE: $00000617 VOL: 0
+;PCODE: $00000618 VOL: 0
+;PCODE: $00000619 VOL: 0
+;PCODE: $0000061A VOL: 0
+;PCODE: $0000061B VOL: 0
+; 0000 03B6 #asm
+;PCODE: $0000061C VOL: 0
+; 0000 03B7 GlcdPutsfCenterLabel1:
+GlcdPutsfCenterLabel1:
+;PCODE: $0000061D VOL: 0
+;PCODE: $0000061E VOL: 0
+; 0000 03B8 #endasm
+; 0000 03B9 GlcdPutsfCenterLabel1:
+;PCODE: $0000061F VOL: 0
+; 0000 03BA #ifdef Debugging
+; 0000 03BB         DebugDisplay(0x9,'1');
+; 0000 03BC         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03BD #endif
+; 0000 03BE         i = strlenf_char(GlcdFlashString);
+;PCODE: $00000620 VOL: 0
+;PCODE: $00000621 VOL: 0
+;PCODE: $00000622 VOL: 0
+;PCODE: $00000623 VOL: 0
+; 0000 03BF         i = i * 6;
+;PCODE: $00000624 VOL: 0
+;PCODE: $00000625 VOL: 0
+;PCODE: $00000626 VOL: 0
+;PCODE: $00000627 VOL: 0
+; 0000 03C0         i = 128 - i;
+;PCODE: $00000628 VOL: 0
+;PCODE: $00000629 VOL: 0
+;PCODE: $0000062A VOL: 0
+;PCODE: $0000062B VOL: 0
+;PCODE: $0000062C VOL: 0
+;PCODE: $0000062D VOL: 0
+; 0000 03C1         GlcdColumn = i / 2;
+;PCODE: $0000062E VOL: 0
+;PCODE: $0000062F VOL: 0
+;PCODE: $00000630 VOL: 0
+;PCODE: $00000631 VOL: 0
+;PCODE: $00000632 VOL: 0
+; 0000 03C2         StackPlus(GlcdPutsfCenterCase2,GlcdPutsfLabel1);
+;PCODE: $00000633 VOL: 0
+;PCODE: $00000634 VOL: 0
+;PCODE: $00000635 VOL: 0
+;PCODE: $00000636 VOL: 0
+;PCODE: $00000637 VOL: 0
+;PCODE: $00000638 VOL: 0
+;PCODE: $00000639 VOL: 0
+;PCODE: $0000063A VOL: 0
+;PCODE: $0000063B VOL: 0
+;PCODE: $0000063C VOL: 0
+;PCODE: $0000063D VOL: 0
+;PCODE: $0000063E VOL: 0
+; 0000 03C3 #asm
+;PCODE: $0000063F VOL: 0
+; 0000 03C4 GlcdClearLabel2:
+GlcdClearLabel2:
+;PCODE: $00000640 VOL: 0
+;PCODE: $00000641 VOL: 0
+; 0000 03C5 #endasm
+; 0000 03C6 GlcdClearLabel2:
+;PCODE: $00000642 VOL: 0
+; 0000 03C7 #ifdef Debugging
+; 0000 03C8         DebugDisplay(0xa,'2');
+; 0000 03C9         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03CA #endif
+; 0000 03CB         if (((GlcdPage == 7) && (GlcdColumn < 127)) || (GlcdPage < 7))
+;PCODE: $00000643 VOL: 0
+;PCODE: $00000644 VOL: 0
+;PCODE: $00000645 VOL: 0
+;PCODE: $00000646 VOL: 0
+;PCODE: $00000647 VOL: 0
+;PCODE: $00000648 VOL: 0
+;PCODE: $00000649 VOL: 0
+;PCODE: $0000064A VOL: 0
+;PCODE: $0000064B VOL: 0
+;PCODE: $0000064C VOL: 0
+;PCODE: $0000064D VOL: 0
+;PCODE: $0000064E VOL: 0
+;PCODE: $0000064F VOL: 0
+; 0000 03CC         {
+; 0000 03CD             GlcdColumn++;
+;PCODE: $00000650 VOL: 0
+;PCODE: $00000651 VOL: 0
+;PCODE: $00000652 VOL: 0
+; 0000 03CE             if (GlcdColumn == 128)
+;PCODE: $00000653 VOL: 0
+;PCODE: $00000654 VOL: 0
+;PCODE: $00000655 VOL: 0
+; 0000 03CF             {
+; 0000 03D0                 GlcdColumn = 0;
+;PCODE: $00000656 VOL: 0
+;PCODE: $00000657 VOL: 0
+; 0000 03D1                 GlcdPage++;
+;PCODE: $00000658 VOL: 0
+; 0000 03D2             }
+; 0000 03D3             StackPlus(GlcdClearCase2,GlcdWriteByteLabel1);
+;PCODE: $00000659 VOL: 0
+;PCODE: $0000065A VOL: 0
+;PCODE: $0000065B VOL: 0
+;PCODE: $0000065C VOL: 0
+;PCODE: $0000065D VOL: 0
+;PCODE: $0000065E VOL: 0
+;PCODE: $0000065F VOL: 0
+;PCODE: $00000660 VOL: 0
+;PCODE: $00000661 VOL: 0
+;PCODE: $00000662 VOL: 0
+;PCODE: $00000663 VOL: 0
+;PCODE: $00000664 VOL: 0
+;PCODE: $00000665 VOL: 0
+; 0000 03D4         }
+; 0000 03D5         else
+;PCODE: $00000666 VOL: 0
+;PCODE: $00000667 VOL: 0
+; 0000 03D6         {
+; 0000 03D7             StackMinus();
+;PCODE: $00000668 VOL: 0
+;PCODE: $00000669 VOL: 0
+;PCODE: $0000066A VOL: 0
+;PCODE: $0000066B VOL: 0
+;PCODE: $0000066C VOL: 0
+;PCODE: $0000066D VOL: 0
+;PCODE: $0000066E VOL: 0
+;PCODE: $0000066F VOL: 0
+;PCODE: $00000670 VOL: 0
+;PCODE: $00000671 VOL: 0
+;PCODE: $00000672 VOL: 0
+;PCODE: $00000673 VOL: 0
+;PCODE: $00000674 VOL: 0
+;PCODE: $00000675 VOL: 0
+;PCODE: $00000676 VOL: 0
+;PCODE: $00000677 VOL: 0
+;PCODE: $00000678 VOL: 0
+	MOV    R30, R2
+;PCODE: $00000679 VOL: 0
+;PCODE: $0000067A VOL: 0
+	MOV    R31, R3
+;PCODE: $0000067B VOL: 0
+;PCODE: $0000067C VOL: 0
+	IJMP
+;PCODE: $0000067D VOL: 0
+;PCODE: $0000067E VOL: 0
+;PCODE: $0000067F VOL: 0
+;PCODE: $00000680 VOL: 0
+;PCODE: $00000681 VOL: 0
+;PCODE: $00000682 VOL: 0
+;PCODE: $00000683 VOL: 0
+;PCODE: $00000684 VOL: 0
+;PCODE: $00000685 VOL: 0
+;PCODE: $00000686 VOL: 0
+;PCODE: $00000687 VOL: 0
+;PCODE: $00000688 VOL: 0
+;PCODE: $00000689 VOL: 0
+; 0000 03D8         }
+;PCODE: $0000068A VOL: 0
+; 0000 03D9 #asm
+;PCODE: $0000068B VOL: 0
+; 0000 03DA GlcdClearLabel1:
+GlcdClearLabel1:
+;PCODE: $0000068C VOL: 0
+;PCODE: $0000068D VOL: 0
+; 0000 03DB #endasm
+; 0000 03DC GlcdClearLabel1:
+;PCODE: $0000068E VOL: 0
+; 0000 03DD #ifdef Debugging
+; 0000 03DE         DebugDisplay(0xa,'1');
+; 0000 03DF         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03E0 #endif
+; 0000 03E1         GlcdColumn = 0;
+;PCODE: $0000068F VOL: 0
+;PCODE: $00000690 VOL: 0
+; 0000 03E2         GlcdPage = 0;
+;PCODE: $00000691 VOL: 0
+; 0000 03E3         GlcdDataByte = 0x00;
+;PCODE: $00000692 VOL: 0
+;PCODE: $00000693 VOL: 0
+; 0000 03E4         StackPlus(GlcdClearCase2,GlcdWriteByteLabel1);
+;PCODE: $00000694 VOL: 0
+;PCODE: $00000695 VOL: 0
+;PCODE: $00000696 VOL: 0
+;PCODE: $00000697 VOL: 0
+;PCODE: $00000698 VOL: 0
+;PCODE: $00000699 VOL: 0
+;PCODE: $0000069A VOL: 0
+;PCODE: $0000069B VOL: 0
+;PCODE: $0000069C VOL: 0
+;PCODE: $0000069D VOL: 0
+;PCODE: $0000069E VOL: 0
+;PCODE: $0000069F VOL: 0
+; 0000 03E5 #asm
+;PCODE: $000006A0 VOL: 0
+; 0000 03E6 GlcdPutbmpLabel2:
+GlcdPutbmpLabel2:
+;PCODE: $000006A1 VOL: 0
+;PCODE: $000006A2 VOL: 0
+; 0000 03E7 #endasm
+; 0000 03E8 GlcdPutbmpLabel2:
+;PCODE: $000006A3 VOL: 0
+; 0000 03E9 #ifdef Debugging
+; 0000 03EA         DebugDisplay(0xb,'2');
+; 0000 03EB         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03EC #endif
+; 0000 03ED         if (++j < 1024)
+;PCODE: $000006A4 VOL: 0
+;PCODE: $000006A5 VOL: 0
+;PCODE: $000006A6 VOL: 0
+;PCODE: $000006A7 VOL: 0
+;PCODE: $000006A8 VOL: 0
+;PCODE: $000006A9 VOL: 0
+; 0000 03EE         {
+; 0000 03EF             GlcdColumn = ((unsigned char)(j)) & 0x7F;
+;PCODE: $000006AA VOL: 0
+;PCODE: $000006AB VOL: 0
+;PCODE: $000006AC VOL: 0
+; 0000 03F0             GlcdPage = ((unsigned char)(j >> 7));
+;PCODE: $000006AD VOL: 0
+;PCODE: $000006AE VOL: 0
+;PCODE: $000006AF VOL: 0
+;PCODE: $000006B0 VOL: 0
+; 0000 03F1             GlcdDataByte = *(++GlcdFlashPointer);
+;PCODE: $000006B1 VOL: 0
+;PCODE: $000006B2 VOL: 0
+;PCODE: $000006B3 VOL: 0
+;PCODE: $000006B4 VOL: 0
+;PCODE: $000006B5 VOL: 0
+;PCODE: $000006B6 VOL: 0
+; 0000 03F2             StackPlus(GlcdPutbmpCase2,GlcdWriteByteLabel1);
+;PCODE: $000006B7 VOL: 0
+;PCODE: $000006B8 VOL: 0
+;PCODE: $000006B9 VOL: 0
+;PCODE: $000006BA VOL: 0
+;PCODE: $000006BB VOL: 0
+;PCODE: $000006BC VOL: 0
+;PCODE: $000006BD VOL: 0
+;PCODE: $000006BE VOL: 0
+;PCODE: $000006BF VOL: 0
+;PCODE: $000006C0 VOL: 0
+;PCODE: $000006C1 VOL: 0
+;PCODE: $000006C2 VOL: 0
+; 0000 03F3         }
+; 0000 03F4         else
+;PCODE: $000006C3 VOL: 0
+;PCODE: $000006C4 VOL: 0
+; 0000 03F5         {
+; 0000 03F6             StackMinus();
+;PCODE: $000006C5 VOL: 0
+;PCODE: $000006C6 VOL: 0
+;PCODE: $000006C7 VOL: 0
+;PCODE: $000006C8 VOL: 0
+;PCODE: $000006C9 VOL: 0
+;PCODE: $000006CA VOL: 0
+;PCODE: $000006CB VOL: 0
+;PCODE: $000006CC VOL: 0
+;PCODE: $000006CD VOL: 0
+;PCODE: $000006CE VOL: 0
+;PCODE: $000006CF VOL: 0
+;PCODE: $000006D0 VOL: 0
+;PCODE: $000006D1 VOL: 0
+;PCODE: $000006D2 VOL: 0
+;PCODE: $000006D3 VOL: 0
+;PCODE: $000006D4 VOL: 0
+;PCODE: $000006D5 VOL: 0
+	MOV    R30, R2
+;PCODE: $000006D6 VOL: 0
+;PCODE: $000006D7 VOL: 0
+	MOV    R31, R3
+;PCODE: $000006D8 VOL: 0
+;PCODE: $000006D9 VOL: 0
+	IJMP
+;PCODE: $000006DA VOL: 0
+;PCODE: $000006DB VOL: 0
+;PCODE: $000006DC VOL: 0
+;PCODE: $000006DD VOL: 0
+;PCODE: $000006DE VOL: 0
+;PCODE: $000006DF VOL: 0
+;PCODE: $000006E0 VOL: 0
+;PCODE: $000006E1 VOL: 0
+;PCODE: $000006E2 VOL: 0
+;PCODE: $000006E3 VOL: 0
+;PCODE: $000006E4 VOL: 0
+;PCODE: $000006E5 VOL: 0
+;PCODE: $000006E6 VOL: 0
+; 0000 03F7         }
+;PCODE: $000006E7 VOL: 0
+; 0000 03F8 #asm
+;PCODE: $000006E8 VOL: 0
+; 0000 03F9 GlcdPutbmpLabel1:
+GlcdPutbmpLabel1:
+;PCODE: $000006E9 VOL: 0
+;PCODE: $000006EA VOL: 0
+; 0000 03FA #endasm
+; 0000 03FB GlcdPutbmpLabel1:
+;PCODE: $000006EB VOL: 0
+; 0000 03FC #ifdef Debugging
+; 0000 03FD         DebugDisplay(0xb,'1');
+; 0000 03FE         while (PINB & 0x01); while (!(PINB & 0x01));
+; 0000 03FF #endif
+; 0000 0400         j = 0;
+;PCODE: $000006EC VOL: 0
+;PCODE: $000006ED VOL: 0
+; 0000 0401         GlcdColumn = 0;
+;PCODE: $000006EE VOL: 0
+;PCODE: $000006EF VOL: 0
+; 0000 0402         GlcdPage = 0;
+;PCODE: $000006F0 VOL: 0
+; 0000 0403         GlcdDataByte = *GlcdFlashPointer;
+;PCODE: $000006F1 VOL: 0
+;PCODE: $000006F2 VOL: 0
+;PCODE: $000006F3 VOL: 0
+; 0000 0404         StackPlus(GlcdPutbmpCase2,GlcdWriteByteLabel1);
+;PCODE: $000006F4 VOL: 0
+;PCODE: $000006F5 VOL: 0
+;PCODE: $000006F6 VOL: 0
+;PCODE: $000006F7 VOL: 0
+;PCODE: $000006F8 VOL: 0
+;PCODE: $000006F9 VOL: 0
+;PCODE: $000006FA VOL: 0
+;PCODE: $000006FB VOL: 0
+;PCODE: $000006FC VOL: 0
+;PCODE: $000006FD VOL: 0
+;PCODE: $000006FE VOL: 0
+;PCODE: $000006FF VOL: 0
+; 0000 0405     }
+; 0000 0406 }
+;PCODE: $00000700 VOL: 0
+;PCODE: $00000701 VOL: 0
+;PCODE: $00000702 VOL: 0
+;
+;
+;
+;// GLCD initializing function
+;void glcd_init (void)
+; 0000 040C {
+;PCODE: $00000703 VOL: 0
+;PCODE: $00000704 VOL: 0
+; 0000 040D     while (GlcdBusy);
+;PCODE: $00000705 VOL: 0
+;PCODE: $00000706 VOL: 0
+;PCODE: $00000707 VOL: 0
+;PCODE: $00000708 VOL: 0
+;PCODE: $00000709 VOL: 0
+;PCODE: $0000070A VOL: 0
+;PCODE: $0000070B VOL: 0
+; 0000 040E     PushCase (GlcdInitCase1);
+;PCODE: $0000070C VOL: 0
+;PCODE: $0000070D VOL: 0
+;PCODE: $0000070E VOL: 0
+; 0000 040F     glcd_timer_isr();
+;PCODE: $0000070F VOL: 0
+; 0000 0410 }
+;PCODE: $00000710 VOL: 0
+;PCODE: $00000711 VOL: 0
+;
+;// GLCD write byte in specific column and page function
+;void glcd_writebyte (unsigned char column, unsigned char page, unsigned char data)
+; 0000 0414 {
+;PCODE: $00000712 VOL: 0
+;PCODE: $00000713 VOL: 0
+; 0000 0415     while (GlcdBusy);
+;	column -> Y+2
+;	page -> Y+1
+;	data -> Y+0
+;PCODE: $00000714 VOL: 0
+;PCODE: $00000715 VOL: 0
+;PCODE: $00000716 VOL: 0
+;PCODE: $00000717 VOL: 0
+;PCODE: $00000718 VOL: 0
+;PCODE: $00000719 VOL: 0
+;PCODE: $0000071A VOL: 0
+; 0000 0416     GlcdColumn = column;
+;PCODE: $0000071B VOL: 0
+;PCODE: $0000071C VOL: 0
+; 0000 0417     GlcdPage = page;
+;PCODE: $0000071D VOL: 0
+;PCODE: $0000071E VOL: 0
+; 0000 0418     GlcdDataByte = data;
+;PCODE: $0000071F VOL: 0
+;PCODE: $00000720 VOL: 0
+; 0000 0419     PushCase(GlcdWriteByteCase1);
+;PCODE: $00000721 VOL: 0
+;PCODE: $00000722 VOL: 0
+;PCODE: $00000723 VOL: 0
+; 0000 041A     glcd_timer_isr();
+;PCODE: $00000724 VOL: 0
+; 0000 041B }
+;PCODE: $00000725 VOL: 0
+;PCODE: $00000726 VOL: 0
+;PCODE: $00000727 VOL: 0
+;
+;// GLCD clear page function
+;void glcd_clear_page (unsigned char page)
+; 0000 041F {
+;PCODE: $00000728 VOL: 0
+;PCODE: $00000729 VOL: 0
+; 0000 0420     while (GlcdBusy);
+;	page -> Y+0
+;PCODE: $0000072A VOL: 0
+;PCODE: $0000072B VOL: 0
+;PCODE: $0000072C VOL: 0
+;PCODE: $0000072D VOL: 0
+;PCODE: $0000072E VOL: 0
+;PCODE: $0000072F VOL: 0
+;PCODE: $00000730 VOL: 0
+; 0000 0421     GlcdPage = page;
+;PCODE: $00000731 VOL: 0
+;PCODE: $00000732 VOL: 0
+; 0000 0422     PushCase (GlcdClearPageCase1);
+;PCODE: $00000733 VOL: 0
+;PCODE: $00000734 VOL: 0
+;PCODE: $00000735 VOL: 0
+; 0000 0423     glcd_timer_isr();
+;PCODE: $00000736 VOL: 0
+; 0000 0424 }
+;PCODE: $00000737 VOL: 0
+;PCODE: $00000738 VOL: 0
+;PCODE: $00000739 VOL: 0
+;
+;// GLCD put character function
+;void glcd_putchar (unsigned char column, unsigned char page, unsigned char ch)
+; 0000 0428 {
+;PCODE: $0000073A VOL: 0
+;PCODE: $0000073B VOL: 0
+; 0000 0429     while (GlcdBusy);
+;	column -> Y+2
+;	page -> Y+1
+;	ch -> Y+0
+;PCODE: $0000073C VOL: 0
+;PCODE: $0000073D VOL: 0
+;PCODE: $0000073E VOL: 0
+;PCODE: $0000073F VOL: 0
+;PCODE: $00000740 VOL: 0
+;PCODE: $00000741 VOL: 0
+;PCODE: $00000742 VOL: 0
+; 0000 042A     GlcdColumn = column;
+;PCODE: $00000743 VOL: 0
+;PCODE: $00000744 VOL: 0
+; 0000 042B     GlcdPage = page;
+;PCODE: $00000745 VOL: 0
+;PCODE: $00000746 VOL: 0
+; 0000 042C     GlcdChar = ch;
+;PCODE: $00000747 VOL: 0
+;PCODE: $00000748 VOL: 0
+; 0000 042D     PushCase(GlcdPutcharCase1);
+;PCODE: $00000749 VOL: 0
+;PCODE: $0000074A VOL: 0
+;PCODE: $0000074B VOL: 0
+; 0000 042E     glcd_timer_isr();
+;PCODE: $0000074C VOL: 0
+; 0000 042F }
+;PCODE: $0000074D VOL: 0
+;PCODE: $0000074E VOL: 0
+;PCODE: $0000074F VOL: 0
+;
+;// GLCD put string function
+;void glcd_puts (unsigned char column, unsigned char page, unsigned char *str)
+; 0000 0433 {
+;PCODE: $00000750 VOL: 0
+;PCODE: $00000751 VOL: 0
+; 0000 0434     while (GlcdBusy);
+;	column -> Y+3
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $00000752 VOL: 0
+;PCODE: $00000753 VOL: 0
+;PCODE: $00000754 VOL: 0
+;PCODE: $00000755 VOL: 0
+;PCODE: $00000756 VOL: 0
+;PCODE: $00000757 VOL: 0
+;PCODE: $00000758 VOL: 0
+; 0000 0435     GlcdColumn = column;
+;PCODE: $00000759 VOL: 0
+;PCODE: $0000075A VOL: 0
+; 0000 0436     GlcdPage = page;
+;PCODE: $0000075B VOL: 0
+;PCODE: $0000075C VOL: 0
+; 0000 0437     GlcdString = str;
+;PCODE: $0000075D VOL: 0
+;PCODE: $0000075E VOL: 0
+; 0000 0438     PushCase(GlcdPutsCase1);
+;PCODE: $0000075F VOL: 0
+;PCODE: $00000760 VOL: 0
+;PCODE: $00000761 VOL: 0
+; 0000 0439     glcd_timer_isr();
+;PCODE: $00000762 VOL: 0
+; 0000 043A }
+;PCODE: $00000763 VOL: 0
+;PCODE: $00000764 VOL: 0
+;PCODE: $00000765 VOL: 0
+;
+;// GLCD put string in center function
+;void glcd_puts_center (unsigned char page, unsigned char *str)
+; 0000 043E {
+;PCODE: $00000766 VOL: 0
+;PCODE: $00000767 VOL: 0
+; 0000 043F     while (GlcdBusy);
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $00000768 VOL: 0
+;PCODE: $00000769 VOL: 0
+;PCODE: $0000076A VOL: 0
+;PCODE: $0000076B VOL: 0
+;PCODE: $0000076C VOL: 0
+;PCODE: $0000076D VOL: 0
+;PCODE: $0000076E VOL: 0
+; 0000 0440     GlcdPage = page;
+;PCODE: $0000076F VOL: 0
+;PCODE: $00000770 VOL: 0
+; 0000 0441     GlcdString = str;
+;PCODE: $00000771 VOL: 0
+;PCODE: $00000772 VOL: 0
+; 0000 0442     PushCase(GlcdPutsCenterCase1);
+;PCODE: $00000773 VOL: 0
+;PCODE: $00000774 VOL: 0
+;PCODE: $00000775 VOL: 0
+; 0000 0443     glcd_timer_isr();
+;PCODE: $00000776 VOL: 0
+; 0000 0444 }
+;PCODE: $00000777 VOL: 0
+;PCODE: $00000778 VOL: 0
+;PCODE: $00000779 VOL: 0
+;
+;// GLCD put flash string function
+;void glcd_putsf (unsigned char column, unsigned char page, flash unsigned char *str)
+; 0000 0448 {
+;PCODE: $0000077A VOL: 0
+;PCODE: $0000077B VOL: 0
+; 0000 0449     while (GlcdBusy);
+;	column -> Y+3
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $0000077C VOL: 0
+;PCODE: $0000077D VOL: 0
+;PCODE: $0000077E VOL: 0
+;PCODE: $0000077F VOL: 0
+;PCODE: $00000780 VOL: 0
+;PCODE: $00000781 VOL: 0
+;PCODE: $00000782 VOL: 0
+; 0000 044A     GlcdColumn = column;
+;PCODE: $00000783 VOL: 0
+;PCODE: $00000784 VOL: 0
+; 0000 044B     GlcdPage = page;
+;PCODE: $00000785 VOL: 0
+;PCODE: $00000786 VOL: 0
+; 0000 044C     GlcdFlashString = str;
+;PCODE: $00000787 VOL: 0
+;PCODE: $00000788 VOL: 0
+; 0000 044D     PushCase(GlcdPutsfCase1);
+;PCODE: $00000789 VOL: 0
+;PCODE: $0000078A VOL: 0
+;PCODE: $0000078B VOL: 0
+; 0000 044E     glcd_timer_isr();
+;PCODE: $0000078C VOL: 0
+; 0000 044F }
+;PCODE: $0000078D VOL: 0
+;PCODE: $0000078E VOL: 0
+;PCODE: $0000078F VOL: 0
+;
+;// GLCD put flash string in center function
+;void glcd_putsf_center (unsigned char page, flash unsigned char *str)
+; 0000 0453 {
+;PCODE: $00000790 VOL: 0
+;PCODE: $00000791 VOL: 0
+; 0000 0454     while (GlcdBusy);
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $00000792 VOL: 0
+;PCODE: $00000793 VOL: 0
+;PCODE: $00000794 VOL: 0
+;PCODE: $00000795 VOL: 0
+;PCODE: $00000796 VOL: 0
+;PCODE: $00000797 VOL: 0
+;PCODE: $00000798 VOL: 0
+; 0000 0455     GlcdPage = page;
+;PCODE: $00000799 VOL: 0
+;PCODE: $0000079A VOL: 0
+; 0000 0456     GlcdFlashString = str;
+;PCODE: $0000079B VOL: 0
+;PCODE: $0000079C VOL: 0
+; 0000 0457     PushCase(GlcdPutsfCenterCase1);
+;PCODE: $0000079D VOL: 0
+;PCODE: $0000079E VOL: 0
+;PCODE: $0000079F VOL: 0
+; 0000 0458     glcd_timer_isr();
+;PCODE: $000007A0 VOL: 0
+; 0000 0459 }
+;PCODE: $000007A1 VOL: 0
+;PCODE: $000007A2 VOL: 0
+;PCODE: $000007A3 VOL: 0
+;
+;// GLCD clear function
+;void glcd_clear (void)
+; 0000 045D {
+;PCODE: $000007A4 VOL: 0
+;PCODE: $000007A5 VOL: 0
+; 0000 045E     while (GlcdBusy);
+;PCODE: $000007A6 VOL: 0
+;PCODE: $000007A7 VOL: 0
+;PCODE: $000007A8 VOL: 0
+;PCODE: $000007A9 VOL: 0
+;PCODE: $000007AA VOL: 0
+;PCODE: $000007AB VOL: 0
+;PCODE: $000007AC VOL: 0
+; 0000 045F     PushCase(GlcdClearCase1);
+;PCODE: $000007AD VOL: 0
+;PCODE: $000007AE VOL: 0
+;PCODE: $000007AF VOL: 0
+; 0000 0460     glcd_timer_isr();
+;PCODE: $000007B0 VOL: 0
+; 0000 0461 }
+;PCODE: $000007B1 VOL: 0
+;PCODE: $000007B2 VOL: 0
+;
+;// GLCD put bitmap function
+;void glcd_putbmp (flash unsigned char *bmp)
+; 0000 0465 {
+;PCODE: $000007B3 VOL: 0
+;PCODE: $000007B4 VOL: 0
+; 0000 0466     while (GlcdBusy);
+;	*bmp -> Y+0
+;PCODE: $000007B5 VOL: 0
+;PCODE: $000007B6 VOL: 0
+;PCODE: $000007B7 VOL: 0
+;PCODE: $000007B8 VOL: 0
+;PCODE: $000007B9 VOL: 0
+;PCODE: $000007BA VOL: 0
+;PCODE: $000007BB VOL: 0
+; 0000 0467     GlcdFlashPointer = bmp;
+;PCODE: $000007BC VOL: 0
+;PCODE: $000007BD VOL: 0
+; 0000 0468     PushCase(GlcdPutbmpCase1);
+;PCODE: $000007BE VOL: 0
+;PCODE: $000007BF VOL: 0
+;PCODE: $000007C0 VOL: 0
+; 0000 0469     glcd_timer_isr();
+;PCODE: $000007C1 VOL: 0
+; 0000 046A }
+;PCODE: $000007C2 VOL: 0
+;PCODE: $000007C3 VOL: 0
+;PCODE: $000007C4 VOL: 0
+;
+;/////////////////////////////////////////////////////////////////////////////////////////////////////
+;//////////////////////////////////////////// Normal Delay ///////////////////////////////////////////
+;/////////////////////////////////////////////////////////////////////////////////////////////////////
+;
+;#include <delay.h>
+;
+;void glcd_define2 (unsigned char *glcd_data_port_address,
+; 0000 0473                   unsigned char *glcd_rs_port_address,  unsigned char glcd_rs_pin,
+; 0000 0474                   unsigned char *glcd_rw_port_address,  unsigned char glcd_rw_pin,
+; 0000 0475                   unsigned char *glcd_en_port_address,  unsigned char glcd_en_pin,
+; 0000 0476                   unsigned char *glcd_cs1_port_address, unsigned char glcd_cs1_pin,
+; 0000 0477                   unsigned char *glcd_cs2_port_address, unsigned char glcd_cs2_pin,
+; 0000 0478                   unsigned char *glcd_rst_port_address, unsigned char glcd_rst_pin)
+; 0000 0479 {
+;PCODE: $000007C5 VOL: 0
+;PCODE: $000007C6 VOL: 0
+; 0000 047A   glcd_data_address = glcd_data_port_address;
+;	*glcd_data_port_address -> Y+18
+;	*glcd_rs_port_address -> Y+16
+;	glcd_rs_pin -> Y+15
+;	*glcd_rw_port_address -> Y+13
+;	glcd_rw_pin -> Y+12
+;	*glcd_en_port_address -> Y+10
+;	glcd_en_pin -> Y+9
+;	*glcd_cs1_port_address -> Y+7
+;	glcd_cs1_pin -> Y+6
+;	*glcd_cs2_port_address -> Y+4
+;	glcd_cs2_pin -> Y+3
+;	*glcd_rst_port_address -> Y+1
+;	glcd_rst_pin -> Y+0
+;PCODE: $000007C7 VOL: 0
+;PCODE: $000007C8 VOL: 0
+; 0000 047B   glcd_rs_address   = glcd_rs_port_address;
+;PCODE: $000007C9 VOL: 0
+;PCODE: $000007CA VOL: 0
+; 0000 047C   glcd_rw_address   = glcd_rw_port_address;
+;PCODE: $000007CB VOL: 0
+;PCODE: $000007CC VOL: 0
+; 0000 047D   glcd_en_address   = glcd_en_port_address;
+;PCODE: $000007CD VOL: 0
+;PCODE: $000007CE VOL: 0
+; 0000 047E   glcd_cs1_address  = glcd_cs1_port_address;
+;PCODE: $000007CF VOL: 0
+;PCODE: $000007D0 VOL: 0
+; 0000 047F   glcd_cs2_address  = glcd_cs2_port_address;
+;PCODE: $000007D1 VOL: 0
+;PCODE: $000007D2 VOL: 0
+; 0000 0480   glcd_rst_address  = glcd_rst_port_address;
+;PCODE: $000007D3 VOL: 0
+;PCODE: $000007D4 VOL: 0
+; 0000 0481 #ifdef _ATXMEGA_DEVICE_
+; 0000 0482   glcd_rs_bit_msk  = 0b00000001 << glcd_rs_pin;
+; 0000 0483   glcd_rw_bit_msk  = 0b00000001 << glcd_rw_pin;
+; 0000 0484   glcd_en_bit_msk  = 0b00000001 << glcd_en_pin;
+; 0000 0485   glcd_cs1_bit_msk = 0b00000001 << glcd_cs1_pin;
+; 0000 0486   glcd_cs2_bit_msk = 0b00000001 << glcd_cs2_pin;
+; 0000 0487   glcd_rst_bit_msk = 0b00000001 << glcd_rst_pin;
+; 0000 0488   // Set all the pins as output
+; 0000 0489   *(glcd_data_address - 0x03) = 0xFF;
+; 0000 048A   *(glcd_rs_address - 0x03)   = glcd_rs_bit_msk;
+; 0000 048B   clr_rw;
+; 0000 048C   *(glcd_rw_address - 0x03)   = glcd_rw_bit_msk;
+; 0000 048D   *(glcd_en_address - 0x03)   = glcd_en_bit_msk;
+; 0000 048E   *(glcd_cs1_address - 0x03)  = glcd_cs1_bit_msk;
+; 0000 048F   *(glcd_cs2_address - 0x03)  = glcd_cs2_bit_msk;
+; 0000 0490   *(glcd_rst_address - 0x03)  = glcd_rst_bit_msk;
+; 0000 0491 #else
+; 0000 0492   glcd_rs_bit_pos  = glcd_rs_pin;
+;PCODE: $000007D5 VOL: 0
+;PCODE: $000007D6 VOL: 0
+; 0000 0493   glcd_rw_bit_pos  = glcd_rw_pin;
+;PCODE: $000007D7 VOL: 0
+;PCODE: $000007D8 VOL: 0
+; 0000 0494   glcd_en_bit_pos  = glcd_en_pin;
+;PCODE: $000007D9 VOL: 0
+;PCODE: $000007DA VOL: 0
+; 0000 0495   glcd_cs1_bit_pos = glcd_cs1_pin;
+;PCODE: $000007DB VOL: 0
+;PCODE: $000007DC VOL: 0
+; 0000 0496   glcd_cs2_bit_pos = glcd_cs2_pin;
+;PCODE: $000007DD VOL: 0
+;PCODE: $000007DE VOL: 0
+; 0000 0497   glcd_rst_bit_pos = glcd_rst_pin;
+;PCODE: $000007DF VOL: 0
+;PCODE: $000007E0 VOL: 0
+; 0000 0498   // Sets the pins as output
+; 0000 0499   *(glcd_data_address - 1) = 0xFF;
+;PCODE: $000007E1 VOL: 0
+;PCODE: $000007E2 VOL: 0
+;PCODE: $000007E3 VOL: 0
+;PCODE: $000007E4 VOL: 0
+; 0000 049A   SETBIT (*(glcd_rs_address - 0x01),glcd_rs_bit_pos);
+;PCODE: $000007E5 VOL: 0
+;PCODE: $000007E6 VOL: 0
+;PCODE: $000007E7 VOL: 0
+;PCODE: $000007E8 VOL: 0
+;PCODE: $000007E9 VOL: 0
+;PCODE: $000007EA VOL: 0
+;PCODE: $000007EB VOL: 0
+;PCODE: $000007EC VOL: 0
+;PCODE: $000007ED VOL: 0
+;PCODE: $000007EE VOL: 0
+; 0000 049B   SETBIT (*(glcd_rw_address - 0x01),glcd_rw_bit_pos);
+;PCODE: $000007EF VOL: 0
+;PCODE: $000007F0 VOL: 0
+;PCODE: $000007F1 VOL: 0
+;PCODE: $000007F2 VOL: 0
+;PCODE: $000007F3 VOL: 0
+;PCODE: $000007F4 VOL: 0
+;PCODE: $000007F5 VOL: 0
+;PCODE: $000007F6 VOL: 0
+;PCODE: $000007F7 VOL: 0
+;PCODE: $000007F8 VOL: 0
+; 0000 049C   clr_rw;
+;PCODE: $000007F9 VOL: 0
+;PCODE: $000007FA VOL: 0
+;PCODE: $000007FB VOL: 0
+;PCODE: $000007FC VOL: 0
+;PCODE: $000007FD VOL: 0
+;PCODE: $000007FE VOL: 0
+;PCODE: $000007FF VOL: 0
+;PCODE: $00000800 VOL: 0
+;PCODE: $00000801 VOL: 0
+;PCODE: $00000802 VOL: 0
+; 0000 049D   SETBIT (*(glcd_en_address - 0x01),glcd_en_bit_pos);
+;PCODE: $00000803 VOL: 0
+;PCODE: $00000804 VOL: 0
+;PCODE: $00000805 VOL: 0
+;PCODE: $00000806 VOL: 0
+;PCODE: $00000807 VOL: 0
+;PCODE: $00000808 VOL: 0
+;PCODE: $00000809 VOL: 0
+;PCODE: $0000080A VOL: 0
+;PCODE: $0000080B VOL: 0
+;PCODE: $0000080C VOL: 0
+; 0000 049E   SETBIT (*(glcd_cs1_address - 0x01),glcd_cs1_bit_pos);
+;PCODE: $0000080D VOL: 0
+;PCODE: $0000080E VOL: 0
+;PCODE: $0000080F VOL: 0
+;PCODE: $00000810 VOL: 0
+;PCODE: $00000811 VOL: 0
+;PCODE: $00000812 VOL: 0
+;PCODE: $00000813 VOL: 0
+;PCODE: $00000814 VOL: 0
+;PCODE: $00000815 VOL: 0
+;PCODE: $00000816 VOL: 0
+; 0000 049F   SETBIT (*(glcd_cs2_address - 0x01),glcd_cs2_bit_pos);
+;PCODE: $00000817 VOL: 0
+;PCODE: $00000818 VOL: 0
+;PCODE: $00000819 VOL: 0
+;PCODE: $0000081A VOL: 0
+;PCODE: $0000081B VOL: 0
+;PCODE: $0000081C VOL: 0
+;PCODE: $0000081D VOL: 0
+;PCODE: $0000081E VOL: 0
+;PCODE: $0000081F VOL: 0
+;PCODE: $00000820 VOL: 0
+; 0000 04A0   SETBIT (*(glcd_rst_address - 0x01),glcd_rst_bit_pos);
+;PCODE: $00000821 VOL: 0
+;PCODE: $00000822 VOL: 0
+;PCODE: $00000823 VOL: 0
+;PCODE: $00000824 VOL: 0
+;PCODE: $00000825 VOL: 0
+;PCODE: $00000826 VOL: 0
+;PCODE: $00000827 VOL: 0
+;PCODE: $00000828 VOL: 0
+;PCODE: $00000829 VOL: 0
+;PCODE: $0000082A VOL: 0
+; 0000 04A1 #endif
+; 0000 04A2 }
+;PCODE: $0000082B VOL: 0
+;PCODE: $0000082C VOL: 0
+;PCODE: $0000082D VOL: 0
+;
+;void glcd_unlock_lock2 (void)
+; 0000 04A5 {
+;PCODE: $0000082E VOL: 0
+;PCODE: $0000082F VOL: 0
+; 0000 04A6   delay_us(7);
+;PCODE: $00000830 VOL: 0
+; 0000 04A7   set_en;
+;PCODE: $00000831 VOL: 0
+;PCODE: $00000832 VOL: 0
+;PCODE: $00000833 VOL: 0
+;PCODE: $00000834 VOL: 0
+;PCODE: $00000835 VOL: 0
+;PCODE: $00000836 VOL: 0
+;PCODE: $00000837 VOL: 0
+;PCODE: $00000838 VOL: 0
+;PCODE: $00000839 VOL: 0
+; 0000 04A8   delay_us(7);
+;PCODE: $0000083A VOL: 0
+; 0000 04A9   clr_en;
+;PCODE: $0000083B VOL: 0
+;PCODE: $0000083C VOL: 0
+;PCODE: $0000083D VOL: 0
+;PCODE: $0000083E VOL: 0
+;PCODE: $0000083F VOL: 0
+;PCODE: $00000840 VOL: 0
+;PCODE: $00000841 VOL: 0
+;PCODE: $00000842 VOL: 0
+;PCODE: $00000843 VOL: 0
+;PCODE: $00000844 VOL: 0
+; 0000 04AA }
+;PCODE: $00000845 VOL: 0
+;PCODE: $00000846 VOL: 0
+;
+;void glcd_init2 (void)
+; 0000 04AD {
+;PCODE: $00000847 VOL: 0
+;PCODE: $00000848 VOL: 0
+; 0000 04AE   char i;
+; 0000 04AF   clr_rst;
+;PCODE: $00000849 VOL: 0
+;	i -> R17
+;PCODE: $0000084A VOL: 0
+;PCODE: $0000084B VOL: 0
+;PCODE: $0000084C VOL: 0
+;PCODE: $0000084D VOL: 0
+;PCODE: $0000084E VOL: 0
+;PCODE: $0000084F VOL: 0
+;PCODE: $00000850 VOL: 0
+;PCODE: $00000851 VOL: 0
+;PCODE: $00000852 VOL: 0
+;PCODE: $00000853 VOL: 0
+; 0000 04B0   delay_ms(10);
+;PCODE: $00000854 VOL: 0
+;PCODE: $00000855 VOL: 0
+;PCODE: $00000856 VOL: 0
+; 0000 04B1   set_rst;
+;PCODE: $00000857 VOL: 0
+;PCODE: $00000858 VOL: 0
+;PCODE: $00000859 VOL: 0
+;PCODE: $0000085A VOL: 0
+;PCODE: $0000085B VOL: 0
+;PCODE: $0000085C VOL: 0
+;PCODE: $0000085D VOL: 0
+;PCODE: $0000085E VOL: 0
+;PCODE: $0000085F VOL: 0
+; 0000 04B2   delay_ms(10);
+;PCODE: $00000860 VOL: 0
+;PCODE: $00000861 VOL: 0
+;PCODE: $00000862 VOL: 0
+; 0000 04B3   clr_rs;
+;PCODE: $00000863 VOL: 0
+;PCODE: $00000864 VOL: 0
+;PCODE: $00000865 VOL: 0
+;PCODE: $00000866 VOL: 0
+;PCODE: $00000867 VOL: 0
+;PCODE: $00000868 VOL: 0
+;PCODE: $00000869 VOL: 0
+;PCODE: $0000086A VOL: 0
+;PCODE: $0000086B VOL: 0
+;PCODE: $0000086C VOL: 0
+; 0000 04B4   clr_cs1;
+;PCODE: $0000086D VOL: 0
+;PCODE: $0000086E VOL: 0
+;PCODE: $0000086F VOL: 0
+;PCODE: $00000870 VOL: 0
+;PCODE: $00000871 VOL: 0
+;PCODE: $00000872 VOL: 0
+;PCODE: $00000873 VOL: 0
+;PCODE: $00000874 VOL: 0
+;PCODE: $00000875 VOL: 0
+;PCODE: $00000876 VOL: 0
+; 0000 04B5   set_cs2;
+;PCODE: $00000877 VOL: 0
+;PCODE: $00000878 VOL: 0
+;PCODE: $00000879 VOL: 0
+;PCODE: $0000087A VOL: 0
+;PCODE: $0000087B VOL: 0
+;PCODE: $0000087C VOL: 0
+;PCODE: $0000087D VOL: 0
+;PCODE: $0000087E VOL: 0
+;PCODE: $0000087F VOL: 0
+; 0000 04B6   for (i=0;i<2;i++)
+;PCODE: $00000880 VOL: 0
+;PCODE: $00000881 VOL: 0
+;PCODE: $00000882 VOL: 0
+;PCODE: $00000883 VOL: 0
+;PCODE: $00000884 VOL: 0
+;PCODE: $00000885 VOL: 0
+;PCODE: $00000886 VOL: 0
+;PCODE: $00000887 VOL: 0
+;PCODE: $00000888 VOL: 0
+; 0000 04B7   {
+; 0000 04B8     *glcd_data_address = 0x3E;
+;PCODE: $00000889 VOL: 0
+;PCODE: $0000088A VOL: 0
+;PCODE: $0000088B VOL: 0
+; 0000 04B9     glcd_unlock_lock2();
+;PCODE: $0000088C VOL: 0
+; 0000 04BA     *glcd_data_address = 0x40;
+;PCODE: $0000088D VOL: 0
+;PCODE: $0000088E VOL: 0
+;PCODE: $0000088F VOL: 0
+; 0000 04BB     glcd_unlock_lock2();
+;PCODE: $00000890 VOL: 0
+; 0000 04BC     *glcd_data_address = 0xB8;
+;PCODE: $00000891 VOL: 0
+;PCODE: $00000892 VOL: 0
+;PCODE: $00000893 VOL: 0
+; 0000 04BD     glcd_unlock_lock2();
+;PCODE: $00000894 VOL: 0
+; 0000 04BE     *glcd_data_address = 0x3F;
+;PCODE: $00000895 VOL: 0
+;PCODE: $00000896 VOL: 0
+;PCODE: $00000897 VOL: 0
+; 0000 04BF     glcd_unlock_lock2();
+;PCODE: $00000898 VOL: 0
+; 0000 04C0     tgl_cs1;
+;PCODE: $00000899 VOL: 0
+;PCODE: $0000089A VOL: 0
+;PCODE: $0000089B VOL: 0
+;PCODE: $0000089C VOL: 0
+;PCODE: $0000089D VOL: 0
+;PCODE: $0000089E VOL: 0
+;PCODE: $0000089F VOL: 0
+;PCODE: $000008A0 VOL: 0
+;PCODE: $000008A1 VOL: 0
+; 0000 04C1     tgl_cs2;
+;PCODE: $000008A2 VOL: 0
+;PCODE: $000008A3 VOL: 0
+;PCODE: $000008A4 VOL: 0
+;PCODE: $000008A5 VOL: 0
+;PCODE: $000008A6 VOL: 0
+;PCODE: $000008A7 VOL: 0
+;PCODE: $000008A8 VOL: 0
+;PCODE: $000008A9 VOL: 0
+;PCODE: $000008AA VOL: 0
+; 0000 04C2   }
+;PCODE: $000008AB VOL: 0
+;PCODE: $000008AC VOL: 0
+;PCODE: $000008AD VOL: 0
+;PCODE: $000008AE VOL: 0
+;PCODE: $000008AF VOL: 0
+; 0000 04C3 }
+;PCODE: $000008B0 VOL: 0
+;PCODE: $000008B1 VOL: 0
+;PCODE: $000008B2 VOL: 0
+;
+;void glcd_writebyte2 (char clmn, char pg, char data)
+; 0000 04C6 {
+;PCODE: $000008B3 VOL: 0
+;PCODE: $000008B4 VOL: 0
+; 0000 04C7   if(clmn >= 64)
+;	clmn -> Y+2
+;	pg -> Y+1
+;	data -> Y+0
+;PCODE: $000008B5 VOL: 0
+;PCODE: $000008B6 VOL: 0
+;PCODE: $000008B7 VOL: 0
+; 0000 04C8   {
+; 0000 04C9     clr_cs1;
+;PCODE: $000008B8 VOL: 0
+;PCODE: $000008B9 VOL: 0
+;PCODE: $000008BA VOL: 0
+;PCODE: $000008BB VOL: 0
+;PCODE: $000008BC VOL: 0
+;PCODE: $000008BD VOL: 0
+;PCODE: $000008BE VOL: 0
+;PCODE: $000008BF VOL: 0
+;PCODE: $000008C0 VOL: 0
+;PCODE: $000008C1 VOL: 0
+; 0000 04CA     set_cs2;
+;PCODE: $000008C2 VOL: 0
+;PCODE: $000008C3 VOL: 0
+;PCODE: $000008C4 VOL: 0
+;PCODE: $000008C5 VOL: 0
+;PCODE: $000008C6 VOL: 0
+;PCODE: $000008C7 VOL: 0
+;PCODE: $000008C8 VOL: 0
+;PCODE: $000008C9 VOL: 0
+;PCODE: $000008CA VOL: 0
+; 0000 04CB   }
+; 0000 04CC   else
+;PCODE: $000008CB VOL: 0
+;PCODE: $000008CC VOL: 0
+; 0000 04CD   {
+; 0000 04CE     set_cs1;
+;PCODE: $000008CD VOL: 0
+;PCODE: $000008CE VOL: 0
+;PCODE: $000008CF VOL: 0
+;PCODE: $000008D0 VOL: 0
+;PCODE: $000008D1 VOL: 0
+;PCODE: $000008D2 VOL: 0
+;PCODE: $000008D3 VOL: 0
+;PCODE: $000008D4 VOL: 0
+;PCODE: $000008D5 VOL: 0
+; 0000 04CF     clr_cs2;
+;PCODE: $000008D6 VOL: 0
+;PCODE: $000008D7 VOL: 0
+;PCODE: $000008D8 VOL: 0
+;PCODE: $000008D9 VOL: 0
+;PCODE: $000008DA VOL: 0
+;PCODE: $000008DB VOL: 0
+;PCODE: $000008DC VOL: 0
+;PCODE: $000008DD VOL: 0
+;PCODE: $000008DE VOL: 0
+;PCODE: $000008DF VOL: 0
+; 0000 04D0   }
+;PCODE: $000008E0 VOL: 0
+; 0000 04D1   clr_rs;
+;PCODE: $000008E1 VOL: 0
+;PCODE: $000008E2 VOL: 0
+;PCODE: $000008E3 VOL: 0
+;PCODE: $000008E4 VOL: 0
+;PCODE: $000008E5 VOL: 0
+;PCODE: $000008E6 VOL: 0
+;PCODE: $000008E7 VOL: 0
+;PCODE: $000008E8 VOL: 0
+;PCODE: $000008E9 VOL: 0
+;PCODE: $000008EA VOL: 0
+; 0000 04D2   clr_rw;
+;PCODE: $000008EB VOL: 0
+;PCODE: $000008EC VOL: 0
+;PCODE: $000008ED VOL: 0
+;PCODE: $000008EE VOL: 0
+;PCODE: $000008EF VOL: 0
+;PCODE: $000008F0 VOL: 0
+;PCODE: $000008F1 VOL: 0
+;PCODE: $000008F2 VOL: 0
+;PCODE: $000008F3 VOL: 0
+;PCODE: $000008F4 VOL: 0
+; 0000 04D3   *glcd_data_address = 0xB8 | pg;
+;PCODE: $000008F5 VOL: 0
+;PCODE: $000008F6 VOL: 0
+;PCODE: $000008F7 VOL: 0
+;PCODE: $000008F8 VOL: 0
+; 0000 04D4   glcd_unlock_lock2();
+;PCODE: $000008F9 VOL: 0
+; 0000 04D5 
+; 0000 04D6   clr_rs;
+;PCODE: $000008FA VOL: 0
+;PCODE: $000008FB VOL: 0
+;PCODE: $000008FC VOL: 0
+;PCODE: $000008FD VOL: 0
+;PCODE: $000008FE VOL: 0
+;PCODE: $000008FF VOL: 0
+;PCODE: $00000900 VOL: 0
+;PCODE: $00000901 VOL: 0
+;PCODE: $00000902 VOL: 0
+;PCODE: $00000903 VOL: 0
+; 0000 04D7   clr_rw;
+;PCODE: $00000904 VOL: 0
+;PCODE: $00000905 VOL: 0
+;PCODE: $00000906 VOL: 0
+;PCODE: $00000907 VOL: 0
+;PCODE: $00000908 VOL: 0
+;PCODE: $00000909 VOL: 0
+;PCODE: $0000090A VOL: 0
+;PCODE: $0000090B VOL: 0
+;PCODE: $0000090C VOL: 0
+;PCODE: $0000090D VOL: 0
+; 0000 04D8   *glcd_data_address = 0x40 | clmn;
+;PCODE: $0000090E VOL: 0
+;PCODE: $0000090F VOL: 0
+;PCODE: $00000910 VOL: 0
+;PCODE: $00000911 VOL: 0
+; 0000 04D9   glcd_unlock_lock2();
+;PCODE: $00000912 VOL: 0
+; 0000 04DA 
+; 0000 04DB   set_rs;
+;PCODE: $00000913 VOL: 0
+;PCODE: $00000914 VOL: 0
+;PCODE: $00000915 VOL: 0
+;PCODE: $00000916 VOL: 0
+;PCODE: $00000917 VOL: 0
+;PCODE: $00000918 VOL: 0
+;PCODE: $00000919 VOL: 0
+;PCODE: $0000091A VOL: 0
+;PCODE: $0000091B VOL: 0
+; 0000 04DC   clr_rw;
+;PCODE: $0000091C VOL: 0
+;PCODE: $0000091D VOL: 0
+;PCODE: $0000091E VOL: 0
+;PCODE: $0000091F VOL: 0
+;PCODE: $00000920 VOL: 0
+;PCODE: $00000921 VOL: 0
+;PCODE: $00000922 VOL: 0
+;PCODE: $00000923 VOL: 0
+;PCODE: $00000924 VOL: 0
+;PCODE: $00000925 VOL: 0
+; 0000 04DD   *glcd_data_address = data;
+;PCODE: $00000926 VOL: 0
+;PCODE: $00000927 VOL: 0
+;PCODE: $00000928 VOL: 0
+; 0000 04DE   glcd_unlock_lock2();
+;PCODE: $00000929 VOL: 0
+; 0000 04DF }
+;PCODE: $0000092A VOL: 0
+;PCODE: $0000092B VOL: 0
+;PCODE: $0000092C VOL: 0
+;
+;void glcd_clear_page2 (char page)
+; 0000 04E2 {
+;PCODE: $0000092D VOL: 0
+;PCODE: $0000092E VOL: 0
+; 0000 04E3   char i;
+; 0000 04E4   for (i = 0;i < 128;i++)
+;PCODE: $0000092F VOL: 0
+;	page -> Y+1
+;	i -> R17
+;PCODE: $00000930 VOL: 0
+;PCODE: $00000931 VOL: 0
+;PCODE: $00000932 VOL: 0
+;PCODE: $00000933 VOL: 0
+;PCODE: $00000934 VOL: 0
+;PCODE: $00000935 VOL: 0
+;PCODE: $00000936 VOL: 0
+;PCODE: $00000937 VOL: 0
+;PCODE: $00000938 VOL: 0
+; 0000 04E5     glcd_writebyte2(i,page,0x00);
+;PCODE: $00000939 VOL: 0
+;PCODE: $0000093A VOL: 0
+;PCODE: $0000093B VOL: 0
+;PCODE: $0000093C VOL: 0
+;PCODE: $0000093D VOL: 0
+;PCODE: $0000093E VOL: 0
+;PCODE: $0000093F VOL: 0
+;PCODE: $00000940 VOL: 0
+;PCODE: $00000941 VOL: 0
+;PCODE: $00000942 VOL: 0
+;PCODE: $00000943 VOL: 0
+; 0000 04E6 }
+;PCODE: $00000944 VOL: 0
+;PCODE: $00000945 VOL: 0
+;PCODE: $00000946 VOL: 0
+;PCODE: $00000947 VOL: 0
+;PCODE: $00000948 VOL: 0
+;
+;void glcd_putchar2 (char column, char page, char ch)
+; 0000 04E9 {
+;PCODE: $00000949 VOL: 0
+;PCODE: $0000094A VOL: 0
+; 0000 04EA   char i;
+; 0000 04EB   ch -= 32;
+;PCODE: $0000094B VOL: 0
+;	column -> Y+3
+;	page -> Y+2
+;	ch -> Y+1
+;	i -> R17
+;PCODE: $0000094C VOL: 0
+;PCODE: $0000094D VOL: 0
+;PCODE: $0000094E VOL: 0
+;PCODE: $0000094F VOL: 0
+; 0000 04EC   for (i = 0;i < 6;i++)
+;PCODE: $00000950 VOL: 0
+;PCODE: $00000951 VOL: 0
+;PCODE: $00000952 VOL: 0
+;PCODE: $00000953 VOL: 0
+;PCODE: $00000954 VOL: 0
+;PCODE: $00000955 VOL: 0
+;PCODE: $00000956 VOL: 0
+;PCODE: $00000957 VOL: 0
+;PCODE: $00000958 VOL: 0
+; 0000 04ED   {
+; 0000 04EE     glcd_writebyte2(column, page, glcd_font[ch][i]);
+;PCODE: $00000959 VOL: 0
+;PCODE: $0000095A VOL: 0
+;PCODE: $0000095B VOL: 0
+;PCODE: $0000095C VOL: 0
+;PCODE: $0000095D VOL: 0
+;PCODE: $0000095E VOL: 0
+;PCODE: $0000095F VOL: 0
+;PCODE: $00000960 VOL: 0
+;PCODE: $00000961 VOL: 0
+;PCODE: $00000962 VOL: 0
+;PCODE: $00000963 VOL: 0
+;PCODE: $00000964 VOL: 0
+;PCODE: $00000965 VOL: 0
+;PCODE: $00000966 VOL: 0
+;PCODE: $00000967 VOL: 0
+; 0000 04EF     column++;
+;PCODE: $00000968 VOL: 0
+;PCODE: $00000969 VOL: 0
+;PCODE: $0000096A VOL: 0
+; 0000 04F0   };
+;PCODE: $0000096B VOL: 0
+;PCODE: $0000096C VOL: 0
+;PCODE: $0000096D VOL: 0
+;PCODE: $0000096E VOL: 0
+;PCODE: $0000096F VOL: 0
+; 0000 04F1 }
+;PCODE: $00000970 VOL: 0
+;PCODE: $00000971 VOL: 0
+;PCODE: $00000972 VOL: 0
+;PCODE: $00000973 VOL: 0
+;PCODE: $00000974 VOL: 0
+;
+;void glcd_puts2 (char column, char page, char* str)
+; 0000 04F4 {
+;PCODE: $00000975 VOL: 0
+;PCODE: $00000976 VOL: 0
+; 0000 04F5   while (*str)
+;	column -> Y+3
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $00000977 VOL: 0
+;PCODE: $00000978 VOL: 0
+;PCODE: $00000979 VOL: 0
+;PCODE: $0000097A VOL: 0
+;PCODE: $0000097B VOL: 0
+; 0000 04F6   {
+; 0000 04F7     glcd_putchar2(column, page, *str++);
+;PCODE: $0000097C VOL: 0
+;PCODE: $0000097D VOL: 0
+;PCODE: $0000097E VOL: 0
+;PCODE: $0000097F VOL: 0
+;PCODE: $00000980 VOL: 0
+;PCODE: $00000981 VOL: 0
+;PCODE: $00000982 VOL: 0
+;PCODE: $00000983 VOL: 0
+;PCODE: $00000984 VOL: 0
+; 0000 04F8     column += 6;
+;PCODE: $00000985 VOL: 0
+;PCODE: $00000986 VOL: 0
+;PCODE: $00000987 VOL: 0
+; 0000 04F9   }
+;PCODE: $00000988 VOL: 0
+;PCODE: $00000989 VOL: 0
+; 0000 04FA }
+;PCODE: $0000098A VOL: 0
+;PCODE: $0000098B VOL: 0
+;PCODE: $0000098C VOL: 0
+;
+;void glcd_puts_center2 (char page, char* str)
+; 0000 04FD {
+;PCODE: $0000098D VOL: 0
+;PCODE: $0000098E VOL: 0
+; 0000 04FE   char i;
+; 0000 04FF   i = strlen_char(str);
+;PCODE: $0000098F VOL: 0
+;	page -> Y+3
+;	*str -> Y+1
+;	i -> R17
+;PCODE: $00000990 VOL: 0
+;PCODE: $00000991 VOL: 0
+;PCODE: $00000992 VOL: 0
+;PCODE: $00000993 VOL: 0
+; 0000 0500   i = (128 - i * 6) / 2;
+;PCODE: $00000994 VOL: 0
+;PCODE: $00000995 VOL: 0
+;PCODE: $00000996 VOL: 0
+;PCODE: $00000997 VOL: 0
+;PCODE: $00000998 VOL: 0
+;PCODE: $00000999 VOL: 0
+;PCODE: $0000099A VOL: 0
+; 0000 0501   glcd_puts2(i,page,str);
+;PCODE: $0000099B VOL: 0
+;PCODE: $0000099C VOL: 0
+;PCODE: $0000099D VOL: 0
+;PCODE: $0000099E VOL: 0
+;PCODE: $0000099F VOL: 0
+;PCODE: $000009A0 VOL: 0
+; 0000 0502 }
+;PCODE: $000009A1 VOL: 0
+;PCODE: $000009A2 VOL: 0
+;PCODE: $000009A3 VOL: 0
+;PCODE: $000009A4 VOL: 0
+;PCODE: $000009A5 VOL: 0
+;
+;void glcd_putsf2 (char column, char page,flash char* str)
+; 0000 0505 {
+;PCODE: $000009A6 VOL: 0
+;PCODE: $000009A7 VOL: 0
+; 0000 0506   while (*str)
+;	column -> Y+3
+;	page -> Y+2
+;	*str -> Y+0
+;PCODE: $000009A8 VOL: 0
+;PCODE: $000009A9 VOL: 0
+;PCODE: $000009AA VOL: 0
+;PCODE: $000009AB VOL: 0
+;PCODE: $000009AC VOL: 0
+; 0000 0507   {
+; 0000 0508     glcd_putchar2(column, page, *str++ );
+;PCODE: $000009AD VOL: 0
+;PCODE: $000009AE VOL: 0
+;PCODE: $000009AF VOL: 0
+;PCODE: $000009B0 VOL: 0
+;PCODE: $000009B1 VOL: 0
+;PCODE: $000009B2 VOL: 0
+;PCODE: $000009B3 VOL: 0
+;PCODE: $000009B4 VOL: 0
+;PCODE: $000009B5 VOL: 0
+;PCODE: $000009B6 VOL: 0
+;PCODE: $000009B7 VOL: 0
+; 0000 0509     column += 6;
+;PCODE: $000009B8 VOL: 0
+;PCODE: $000009B9 VOL: 0
+;PCODE: $000009BA VOL: 0
+; 0000 050A   }
+;PCODE: $000009BB VOL: 0
+;PCODE: $000009BC VOL: 0
+; 0000 050B }
+;PCODE: $000009BD VOL: 0
+;PCODE: $000009BE VOL: 0
+;PCODE: $000009BF VOL: 0
+;
+;void glcd_putsf_center2 (char page, flash char* str)
+; 0000 050E {
+;PCODE: $000009C0 VOL: 0
+;PCODE: $000009C1 VOL: 0
+; 0000 050F   char i;
+; 0000 0510   i = strlenf_char(str);
+;PCODE: $000009C2 VOL: 0
+;	page -> Y+3
+;	*str -> Y+1
+;	i -> R17
+;PCODE: $000009C3 VOL: 0
+;PCODE: $000009C4 VOL: 0
+;PCODE: $000009C5 VOL: 0
+;PCODE: $000009C6 VOL: 0
+; 0000 0511   i = (128 - i * 6) / 2;
+;PCODE: $000009C7 VOL: 0
+;PCODE: $000009C8 VOL: 0
+;PCODE: $000009C9 VOL: 0
+;PCODE: $000009CA VOL: 0
+;PCODE: $000009CB VOL: 0
+;PCODE: $000009CC VOL: 0
+;PCODE: $000009CD VOL: 0
+; 0000 0512   glcd_putsf2(i,page,str);
+;PCODE: $000009CE VOL: 0
+;PCODE: $000009CF VOL: 0
+;PCODE: $000009D0 VOL: 0
+;PCODE: $000009D1 VOL: 0
+;PCODE: $000009D2 VOL: 0
+;PCODE: $000009D3 VOL: 0
+; 0000 0513 }
+;PCODE: $000009D4 VOL: 0
+;PCODE: $000009D5 VOL: 0
+;PCODE: $000009D6 VOL: 0
+;PCODE: $000009D7 VOL: 0
+;PCODE: $000009D8 VOL: 0
+;
+;void glcd_clear2 (void)
+; 0000 0516 {
+;PCODE: $000009D9 VOL: 0
+;PCODE: $000009DA VOL: 0
+; 0000 0517   char i, j;
+; 0000 0518   for (i = 0;i < 8;i++)
+;PCODE: $000009DB VOL: 0
+;PCODE: $000009DC VOL: 0
+;	i -> R17
+;	j -> R16
+;PCODE: $000009DD VOL: 0
+;PCODE: $000009DE VOL: 0
+;PCODE: $000009DF VOL: 0
+;PCODE: $000009E0 VOL: 0
+;PCODE: $000009E1 VOL: 0
+;PCODE: $000009E2 VOL: 0
+;PCODE: $000009E3 VOL: 0
+;PCODE: $000009E4 VOL: 0
+;PCODE: $000009E5 VOL: 0
+; 0000 0519     for (j = 0;j < 128;j++)
+;PCODE: $000009E6 VOL: 0
+;PCODE: $000009E7 VOL: 0
+;PCODE: $000009E8 VOL: 0
+;PCODE: $000009E9 VOL: 0
+;PCODE: $000009EA VOL: 0
+;PCODE: $000009EB VOL: 0
+;PCODE: $000009EC VOL: 0
+;PCODE: $000009ED VOL: 0
+;PCODE: $000009EE VOL: 0
+; 0000 051A       glcd_writebyte2(j, i, 0);
+;PCODE: $000009EF VOL: 0
+;PCODE: $000009F0 VOL: 0
+;PCODE: $000009F1 VOL: 0
+;PCODE: $000009F2 VOL: 0
+;PCODE: $000009F3 VOL: 0
+;PCODE: $000009F4 VOL: 0
+;PCODE: $000009F5 VOL: 0
+;PCODE: $000009F6 VOL: 0
+;PCODE: $000009F7 VOL: 0
+;PCODE: $000009F8 VOL: 0
+; 0000 051B }
+;PCODE: $000009F9 VOL: 0
+;PCODE: $000009FA VOL: 0
+;PCODE: $000009FB VOL: 0
+;PCODE: $000009FC VOL: 0
+;PCODE: $000009FD VOL: 0
+;PCODE: $000009FE VOL: 0
+;PCODE: $000009FF VOL: 0
+;PCODE: $00000A00 VOL: 0
+;
+;void glcd_putbmp2 (flash unsigned char bmp[])
+; 0000 051E {
+;PCODE: $00000A01 VOL: 0
+;PCODE: $00000A02 VOL: 0
+; 0000 051F   char x=0;
+; 0000 0520   char y=0;
+; 0000 0521   unsigned int i;
+; 0000 0522   for(i=0;i<1024;i++)
+;PCODE: $00000A03 VOL: 0
+;	x -> R17
+;	y -> R16
+;	i -> R18,R19
+;PCODE: $00000A04 VOL: 0
+;PCODE: $00000A05 VOL: 0
+;PCODE: $00000A06 VOL: 0
+;PCODE: $00000A07 VOL: 0
+;PCODE: $00000A08 VOL: 0
+;PCODE: $00000A09 VOL: 0
+;PCODE: $00000A0A VOL: 0
+;PCODE: $00000A0B VOL: 0
+;PCODE: $00000A0C VOL: 0
+;PCODE: $00000A0D VOL: 0
+;PCODE: $00000A0E VOL: 0
+;PCODE: $00000A0F VOL: 0
+;PCODE: $00000A10 VOL: 0
+; 0000 0523   {
+; 0000 0524     if(x==128)
+;PCODE: $00000A11 VOL: 0
+;PCODE: $00000A12 VOL: 0
+;PCODE: $00000A13 VOL: 0
+; 0000 0525     {
+; 0000 0526       x=0;
+;PCODE: $00000A14 VOL: 0
+;PCODE: $00000A15 VOL: 0
+; 0000 0527       y++;
+;PCODE: $00000A16 VOL: 0
+;PCODE: $00000A17 VOL: 0
+; 0000 0528     }
+; 0000 0529     glcd_writebyte2(x,y,bmp[i]);
+;PCODE: $00000A18 VOL: 0
+;PCODE: $00000A19 VOL: 0
+;PCODE: $00000A1A VOL: 0
+;PCODE: $00000A1B VOL: 0
+;PCODE: $00000A1C VOL: 0
+;PCODE: $00000A1D VOL: 0
+;PCODE: $00000A1E VOL: 0
+;PCODE: $00000A1F VOL: 0
+;PCODE: $00000A20 VOL: 0
+; 0000 052A     x++;
+;PCODE: $00000A21 VOL: 0
+;PCODE: $00000A22 VOL: 0
+; 0000 052B   }
+;PCODE: $00000A23 VOL: 0
+;PCODE: $00000A24 VOL: 0
+;PCODE: $00000A25 VOL: 0
+;PCODE: $00000A26 VOL: 0
+;PCODE: $00000A27 VOL: 0
+; 0000 052C }
+;PCODE: $00000A28 VOL: 0
+;PCODE: $00000A29 VOL: 0
+;PCODE: $00000A2A VOL: 0
+;PCODE: $00000A2B VOL: 0
+;
+;
+;
+;
+;
+;
+;
+;// Timer 0 output compare interrupt service routine
+;interrupt [TIM0_COMP] void timer0_comp_isr(void)
+; 0000 0536 {
+;PCODE: $00000A2C VOL: 0
+;PCODE: $00000A2D VOL: 0
+; 0000 0537 // Place your code here
+; 0000 0538     glcd_timer_isr();
+;PCODE: $00000A2E VOL: 0
+; 0000 0539 }
+;PCODE: $00000A2F VOL: 0
+;PCODE: $00000A30 VOL: 0
+;PCODE: $00000A31 VOL: 0
+;
+;char TCCR0_value = 0x09;
+
+	.DSEG
+;
+;void timer0_start (void)
+; 0000 053E {
+
+	.CSEG
+;PCODE: $00000A32 VOL: 0
+;PCODE: $00000A33 VOL: 0
+; 0000 053F     TCCR0 = TCCR0_value;
+;PCODE: $00000A34 VOL: 0
+;PCODE: $00000A35 VOL: 0
+; 0000 0540 }
+;PCODE: $00000A36 VOL: 0
+;PCODE: $00000A37 VOL: 0
+;
+;void timer0_stop (void)
+; 0000 0543 {
+;PCODE: $00000A38 VOL: 0
+;PCODE: $00000A39 VOL: 0
+; 0000 0544     TCCR0 = 0x00;
+;PCODE: $00000A3A VOL: 0
+;PCODE: $00000A3B VOL: 0
+; 0000 0545     TCNT0 = 0x00;
+;PCODE: $00000A3C VOL: 0
+;PCODE: $00000A3D VOL: 0
+; 0000 0546 }
+;PCODE: $00000A3E VOL: 0
+;PCODE: $00000A3F VOL: 0
+;
+;void timer0_set_7us (void)
+; 0000 0549 {
+;PCODE: $00000A40 VOL: 0
+;PCODE: $00000A41 VOL: 0
+; 0000 054A     TCCR0_value = 0x09;
+;PCODE: $00000A42 VOL: 0
+;PCODE: $00000A43 VOL: 0
+; 0000 054B     OCR0 = 0x6F;
+;PCODE: $00000A44 VOL: 0
+;PCODE: $00000A45 VOL: 0
+; 0000 054C }
+;PCODE: $00000A46 VOL: 0
+;PCODE: $00000A47 VOL: 0
+;
+;void timer0_set_10ms (void)
+; 0000 054F {
+;PCODE: $00000A48 VOL: 0
+;PCODE: $00000A49 VOL: 0
+; 0000 0550     TCCR0_value = 0x0D;
+;PCODE: $00000A4A VOL: 0
+;PCODE: $00000A4B VOL: 0
+; 0000 0551     OCR0 = 0x9B;
+;PCODE: $00000A4C VOL: 0
+;PCODE: $00000A4D VOL: 0
+; 0000 0552 }
+;PCODE: $00000A4E VOL: 0
+;PCODE: $00000A4F VOL: 0
+;
+;// Declare your global variables here
+;flash unsigned char  picture[1024] = {
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,192,248,255,255,255,255,
+; 255,255,248,192,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,128,192,224,240,248,252,254,127, 63,
+;  31,143,143,223,255,255,254,252,248,240,224,224,224,224,224,192,
+; 192,192,192,224,224,240,240,240,248,248,248,248,248,248,248,240,
+; 240,240,248,252,254,254,254,252,248,248,248,248,248,248,248,240,
+; 240,240,224,192,192,128,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,192,248,252,254,254,252,248,192,  0,  0,  0,  0,
+; 240,240,248,248,248,252,252,252,254,190,191,191, 31, 31,  3,  3,
+;  31, 31,191,191,190,254,252,252,252,248,248,248,248,252,252,254,
+;  62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 63,127,254,255,
+; 255,255,255,255,255,255,127, 63, 31, 15,  7,  3,  3,  3, 15, 31,
+;  31, 31, 31, 15, 15,  3,  1,  1,  0, 28, 62,127,255,255,255,255,
+; 255,239,207,143, 15,  7,  1,129,193,227,247,255,255,255,255,127,
+;  63, 31,  7, 15, 63,127,127,126,124,252,248,248,240,252,254,190,
+;  62,127,127,127,255,255,255,255,247,255,255,255,127,127,127, 62,
+;   1,  1,  3,  3,  3,  7,  7,  7, 15, 15,127,255,255,255,248,248,
+; 254,255,255,255,255,255,247,255,255,255,255,255,  3,  1,  1,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,
+;   1,  3,  3,  1,  1,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  3,
+;   7, 15, 15, 31, 63, 63, 63, 31, 15, 15,  7,  3,  1,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,128,193,227,255,255,255,255,
+; 254,  0,  0,  0,  1, 15, 31, 63, 63, 63, 15,  1,  0,  0,  0,  0,
+;   0,  0,  0,  0,192,224,240,240,224,192,  0,  3, 31,127,255,255,
+; 255,255,231,195,129,129,  1,  1,  1,  1,  1,  1,  0,  0,  0,  0,
+;   0,128,225,255,159,129,193,127, 30,  0,112,248,156,148,148,220,
+;  88,  0,128,129,241,255,143,128,  0,  0,224,240,148,148,244,252,
+; 152,  0,  4, 28,252,196, 96, 60, 12,  4,  0,  0,  0,  0,  0,  0,
+;   0,128,225,255,159, 17, 49,249,207,134,  0,  0,240,224,224,224,
+; 192,128,128,  0,  0,  0,  0,128,199,207,207,143,135,247,255,255,
+; 255,255,252,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;  62, 62, 62,127,255,255,255,255,255,255,127, 62, 62, 62,252,241,
+; 251,255,255,255,255, 31, 31, 31, 31, 31, 31, 12,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  2,  2,  2,  3,  2,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  3,  3,  7,  7,
+;  31,255,255,255,252,248,248,255,255,255,255,255,255,255,127, 63,
+; 127,255,255,252,248,240,240,240,224,224,224,192,  0,  0,  0,  0,
+;   0,  0,  0,  0,  1,  3,  7,  7, 55,121,252,252,252,254,255,255,
+; 255,255,255,255,255,255,254,252,124,252,248,248,248,248,252,252,
+; 252,252,184,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,192,224,224,224,192,128,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+; 192,224,224,224,192,  0,  0,  0,  0,  0,  0,  0,  0,128,224,248,
+; 252,252,252,248,224,224,224,224,224,224,224,240,240,240,248,252,
+; 254,255,255,255,255,255,255,255,127, 15,127,255,255,255,255,254,
+; 255,255,255,223,143,135,  7,  7,  7,  3,  3,  1,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1, 31,127,
+; 127,127, 63, 31,  1,  0,  0,  0,  0,128,192,249,255,255,255,255,
+; 255,223,223,223,223,223,223,255,255,255,255,255, 31, 31, 31, 31,
+;  31, 15, 15, 15, 15, 31, 31, 63,126,254,252,252,252,248,248,254,
+; 255,255,255,255,255,254,248,248,252,252,254,254,127, 31, 31, 15,
+;   7,131,129,131,131,131,195,195,251,255,255,255,255,255,255,255,
+; 255,255,255,255,255,249,249,240,224,  0,224,240,249,255,255,255,
+; 127,127, 63, 63, 31, 31, 15,  6,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+;   0,  0,  0,  0, 60,126,254,254,255,255,255,255,127,127, 63, 63,
+;  63, 31, 31,  7,  7,  7,  7,  7,  7,  3,  3,  1,  0,  0,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,225,255,255,255,255,
+; 255,127, 62,127,255,255,255,255,255,225,  1,  0,  0,  0,  0,  6,
+;  15, 31, 31, 31, 31, 63, 63, 63,255,255,255,249,255,255,255,127,
+;  63, 63, 31, 31, 31, 31,255,255,255,255,255,255,255, 31,  0,  0,
+;   0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0
+;};
+;
+;void main(void)
+; 0000 0599 {
+;PCODE: $00000A50 VOL: 0
+; 0000 059A // Declare your local variables here
+; 0000 059B char str[22] = "What's that????";
+; 0000 059C // Input/Output Ports initialization
+; 0000 059D // Port A initialization
+; 0000 059E // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In
+; 0000 059F // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T
+; 0000 05A0 PORTA=0x00;
+;PCODE: $00000A51 VOL: 0
+;PCODE: $00000A52 VOL: 0
+;PCODE: $00000A53 VOL: 0
+;PCODE: $00000A54 VOL: 0
+;PCODE: $00000A55 VOL: 0
+;	str -> Y+0
+;PCODE: $00000A56 VOL: 0
+;PCODE: $00000A57 VOL: 0
+; 0000 05A1 DDRA=0x00;
+;PCODE: $00000A58 VOL: 0
+;PCODE: $00000A59 VOL: 0
+; 0000 05A2 
+; 0000 05A3 // Port B initialization
+; 0000 05A4 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In
+; 0000 05A5 // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T
+; 0000 05A6 PORTB=0x01;
+;PCODE: $00000A5A VOL: 0
+;PCODE: $00000A5B VOL: 0
+; 0000 05A7 DDRB=0x00;
+;PCODE: $00000A5C VOL: 0
+;PCODE: $00000A5D VOL: 0
+; 0000 05A8 
+; 0000 05A9 // Port C initialization
+; 0000 05AA // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In
+; 0000 05AB // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T
+; 0000 05AC PORTC=0x00;
+;PCODE: $00000A5E VOL: 0
+;PCODE: $00000A5F VOL: 0
+; 0000 05AD DDRC=0x00;
+;PCODE: $00000A60 VOL: 0
+;PCODE: $00000A61 VOL: 0
+; 0000 05AE 
+; 0000 05AF // Port D initialization
+; 0000 05B0 // Func7=In Func6=In Func5=In Func4=In Func3=In Func2=In Func1=In Func0=In
+; 0000 05B1 // State7=T State6=T State5=T State4=T State3=T State2=T State1=T State0=T
+; 0000 05B2 PORTD=0x00;
+;PCODE: $00000A62 VOL: 0
+;PCODE: $00000A63 VOL: 0
+; 0000 05B3 DDRD=0x00;
+;PCODE: $00000A64 VOL: 0
+;PCODE: $00000A65 VOL: 0
+; 0000 05B4 
+; 0000 05B5 // Timer/Counter 0 initialization
+; 0000 05B6 // Clock source: System Clock
+; 0000 05B7 // Clock value: 16000.000 kHz
+; 0000 05B8 // Mode: CTC top=OCR0
+; 0000 05B9 // OC0 output: Disconnected
+; 0000 05BA TCCR0=0x00;// 0x09 for 7us, 0x0D for 10ms
+;PCODE: $00000A66 VOL: 0
+;PCODE: $00000A67 VOL: 0
+; 0000 05BB TCNT0=0x00;
+;PCODE: $00000A68 VOL: 0
+;PCODE: $00000A69 VOL: 0
+; 0000 05BC OCR0=0x6F;// 0x6F for 7us, 0x9B for 10ms
+;PCODE: $00000A6A VOL: 0
+;PCODE: $00000A6B VOL: 0
+; 0000 05BD 
+; 0000 05BE // Timer/Counter 1 initialization
+; 0000 05BF // Clock source: System Clock
+; 0000 05C0 // Clock value: Timer1 Stopped
+; 0000 05C1 // Mode: Normal top=0xFFFF
+; 0000 05C2 // OC1A output: Discon.
+; 0000 05C3 // OC1B output: Discon.
+; 0000 05C4 // Noise Canceler: Off
+; 0000 05C5 // Input Capture on Falling Edge
+; 0000 05C6 // Timer1 Overflow Interrupt: Off
+; 0000 05C7 // Input Capture Interrupt: Off
+; 0000 05C8 // Compare A Match Interrupt: Off
+; 0000 05C9 // Compare B Match Interrupt: Off
+; 0000 05CA TCCR1A=0x00;
+;PCODE: $00000A6C VOL: 0
+;PCODE: $00000A6D VOL: 0
+; 0000 05CB TCCR1B=0x00;
+;PCODE: $00000A6E VOL: 0
+;PCODE: $00000A6F VOL: 0
+; 0000 05CC TCNT1H=0x00;
+;PCODE: $00000A70 VOL: 0
+;PCODE: $00000A71 VOL: 0
+; 0000 05CD TCNT1L=0x00;
+;PCODE: $00000A72 VOL: 0
+;PCODE: $00000A73 VOL: 0
+; 0000 05CE ICR1H=0x00;
+;PCODE: $00000A74 VOL: 0
+;PCODE: $00000A75 VOL: 0
+; 0000 05CF ICR1L=0x00;
+;PCODE: $00000A76 VOL: 0
+;PCODE: $00000A77 VOL: 0
+; 0000 05D0 OCR1AH=0x00;
+;PCODE: $00000A78 VOL: 0
+;PCODE: $00000A79 VOL: 0
+; 0000 05D1 OCR1AL=0x00;
+;PCODE: $00000A7A VOL: 0
+;PCODE: $00000A7B VOL: 0
+; 0000 05D2 OCR1BH=0x00;
+;PCODE: $00000A7C VOL: 0
+;PCODE: $00000A7D VOL: 0
+; 0000 05D3 OCR1BL=0x00;
+;PCODE: $00000A7E VOL: 0
+;PCODE: $00000A7F VOL: 0
+; 0000 05D4 
+; 0000 05D5 // Timer/Counter 2 initialization
+; 0000 05D6 // Clock source: System Clock
+; 0000 05D7 // Clock value: Timer2 Stopped
+; 0000 05D8 // Mode: Normal top=0xFF
+; 0000 05D9 // OC2 output: Disconnected
+; 0000 05DA ASSR=0x00;
+;PCODE: $00000A80 VOL: 0
+;PCODE: $00000A81 VOL: 0
+; 0000 05DB TCCR2=0x00;
+;PCODE: $00000A82 VOL: 0
+;PCODE: $00000A83 VOL: 0
+; 0000 05DC TCNT2=0x00;
+;PCODE: $00000A84 VOL: 0
+;PCODE: $00000A85 VOL: 0
+; 0000 05DD OCR2=0x00;
+;PCODE: $00000A86 VOL: 0
+;PCODE: $00000A87 VOL: 0
+; 0000 05DE 
+; 0000 05DF // External Interrupt(s) initialization
+; 0000 05E0 // INT0: Off
+; 0000 05E1 // INT1: Off
+; 0000 05E2 // INT2: Off
+; 0000 05E3 MCUCR=0x00;
+;PCODE: $00000A88 VOL: 0
+;PCODE: $00000A89 VOL: 0
+; 0000 05E4 MCUCSR=0x00;
+;PCODE: $00000A8A VOL: 0
+;PCODE: $00000A8B VOL: 0
+; 0000 05E5 
+; 0000 05E6 // Timer(s)/Counter(s) Interrupt(s) initialization
+; 0000 05E7 TIMSK=0x02;
+;PCODE: $00000A8C VOL: 0
+;PCODE: $00000A8D VOL: 0
+; 0000 05E8 
+; 0000 05E9 // Alphanumeric LCD initialization
+; 0000 05EA // Connections specified in the
+; 0000 05EB // Project|Configure|C Compiler|Libraries|Alphanumeric LCD menu:
+; 0000 05EC // RS - PORTA Bit 0
+; 0000 05ED // RD - PORTA Bit 1
+; 0000 05EE // EN - PORTA Bit 2
+; 0000 05EF // D4 - PORTA Bit 4
+; 0000 05F0 // D5 - PORTA Bit 5
+; 0000 05F1 // D6 - PORTA Bit 6
+; 0000 05F2 // D7 - PORTA Bit 7
+; 0000 05F3 // Characters/line: 16
+; 0000 05F4 // USART initialization
+; 0000 05F5 // USART disabled
+; 0000 05F6 UCSRB=0x00;
+;PCODE: $00000A8E VOL: 0
+;PCODE: $00000A8F VOL: 0
+; 0000 05F7 
+; 0000 05F8 // Analog Comparator initialization
+; 0000 05F9 // Analog Comparator: Off
+; 0000 05FA // Analog Comparator Input Capture by Timer/Counter 1: Off
+; 0000 05FB ACSR=0x80;
+;PCODE: $00000A90 VOL: 0
+;PCODE: $00000A91 VOL: 0
+; 0000 05FC SFIOR=0x00;
+;PCODE: $00000A92 VOL: 0
+;PCODE: $00000A93 VOL: 0
+; 0000 05FD 
+; 0000 05FE // ADC initialization
+; 0000 05FF // ADC disabled
+; 0000 0600 ADCSRA=0x00;
+;PCODE: $00000A94 VOL: 0
+;PCODE: $00000A95 VOL: 0
+; 0000 0601 
+; 0000 0602 // SPI initialization
+; 0000 0603 // SPI disabled
+; 0000 0604 SPCR=0x00;
+;PCODE: $00000A96 VOL: 0
+;PCODE: $00000A97 VOL: 0
+; 0000 0605 
+; 0000 0606 // TWI initialization
+; 0000 0607 // TWI disabled
+; 0000 0608 TWCR=0x00;
+;PCODE: $00000A98 VOL: 0
+;PCODE: $00000A99 VOL: 0
+; 0000 0609 
+; 0000 060A timer_interrupt_enable  = (void (*)())(timer0_start);
+;PCODE: $00000A9A VOL: 0
+;PCODE: $00000A9B VOL: 0
+; 0000 060B timer_interrupt_disable = (void (*)())(timer0_stop);
+;PCODE: $00000A9C VOL: 0
+;PCODE: $00000A9D VOL: 0
+; 0000 060C set_delay_7us           = (void (*)())(timer0_set_7us);
+;PCODE: $00000A9E VOL: 0
+;PCODE: $00000A9F VOL: 0
+; 0000 060D set_delay_10ms          = (void (*)())(timer0_set_10ms);
+;PCODE: $00000AA0 VOL: 0
+;PCODE: $00000AA1 VOL: 0
+; 0000 060E 
+; 0000 060F #asm("sei")
+;PCODE: $00000AA2 VOL: 0
+	sei
+;PCODE: $00000AA3 VOL: 0
+; 0000 0610 
+; 0000 0611 lcd_init(16);
+;PCODE: $00000AA4 VOL: 0
+;PCODE: $00000AA5 VOL: 0
+;PCODE: $00000AA6 VOL: 0
+; 0000 0612 lcd_clear();
+;PCODE: $00000AA7 VOL: 0
+; 0000 0613 lcd_gotoxy(0,1);
+;PCODE: $00000AA8 VOL: 0
+;PCODE: $00000AA9 VOL: 0
+;PCODE: $00000AAA VOL: 0
+;PCODE: $00000AAB VOL: 0
+;PCODE: $00000AAC VOL: 0
+; 0000 0614 lcd_putsf("0123456789ABCDEF");
+;PCODE: $00000AAD VOL: 0
+;PCODE: $00000AAE VOL: 0
+;PCODE: $00000AAF VOL: 0
+;PCODE: $00000AB0 VOL: 0
+; 0000 0615 
+; 0000 0616 glcd_define(&PORTC,&PORTD,0,&PORTD,1,&PORTD,2,&PORTD,3,&PORTD,4,&PORTD,5);
+;PCODE: $00000AB1 VOL: 0
+;PCODE: $00000AB2 VOL: 0
+;PCODE: $00000AB3 VOL: 0
+;PCODE: $00000AB4 VOL: 0
+;PCODE: $00000AB5 VOL: 0
+;PCODE: $00000AB6 VOL: 0
+;PCODE: $00000AB7 VOL: 0
+;PCODE: $00000AB8 VOL: 0
+;PCODE: $00000AB9 VOL: 0
+;PCODE: $00000ABA VOL: 0
+;PCODE: $00000ABB VOL: 0
+;PCODE: $00000ABC VOL: 0
+;PCODE: $00000ABD VOL: 0
+;PCODE: $00000ABE VOL: 0
+;PCODE: $00000ABF VOL: 0
+;PCODE: $00000AC0 VOL: 0
+;PCODE: $00000AC1 VOL: 0
+;PCODE: $00000AC2 VOL: 0
+;PCODE: $00000AC3 VOL: 0
+;PCODE: $00000AC4 VOL: 0
+;PCODE: $00000AC5 VOL: 0
+;PCODE: $00000AC6 VOL: 0
+;PCODE: $00000AC7 VOL: 0
+;PCODE: $00000AC8 VOL: 0
+;PCODE: $00000AC9 VOL: 0
+;PCODE: $00000ACA VOL: 0
+;PCODE: $00000ACB VOL: 0
+; 0000 0617 
+; 0000 0618 glcd_init();
+;PCODE: $00000ACC VOL: 0
+; 0000 0619 glcd_clear();
+;PCODE: $00000ACD VOL: 0
+; 0000 061A glcd_putchar(0,6,'M');
+;PCODE: $00000ACE VOL: 0
+;PCODE: $00000ACF VOL: 0
+;PCODE: $00000AD0 VOL: 0
+;PCODE: $00000AD1 VOL: 0
+;PCODE: $00000AD2 VOL: 0
+;PCODE: $00000AD3 VOL: 0
+;PCODE: $00000AD4 VOL: 0
+; 0000 061B glcd_putsf(0,0,"Hi!\0kjk");
+;PCODE: $00000AD5 VOL: 0
+;PCODE: $00000AD6 VOL: 0
+;PCODE: $00000AD7 VOL: 0
+;PCODE: $00000AD8 VOL: 0
+;PCODE: $00000AD9 VOL: 0
+;PCODE: $00000ADA VOL: 0
+;PCODE: $00000ADB VOL: 0
+;PCODE: $00000ADC VOL: 0
+; 0000 061C glcd_puts(0,1,str);
+;PCODE: $00000ADD VOL: 0
+;PCODE: $00000ADE VOL: 0
+;PCODE: $00000ADF VOL: 0
+;PCODE: $00000AE0 VOL: 0
+;PCODE: $00000AE1 VOL: 0
+;PCODE: $00000AE2 VOL: 0
+;PCODE: $00000AE3 VOL: 0
+; 0000 061D glcd_putsf_center(2,"sdah");
+;PCODE: $00000AE4 VOL: 0
+;PCODE: $00000AE5 VOL: 0
+;PCODE: $00000AE6 VOL: 0
+;PCODE: $00000AE7 VOL: 0
+;PCODE: $00000AE8 VOL: 0
+;PCODE: $00000AE9 VOL: 0
+; 0000 061E glcd_puts_center(3,str);
+;PCODE: $00000AEA VOL: 0
+;PCODE: $00000AEB VOL: 0
+;PCODE: $00000AEC VOL: 0
+;PCODE: $00000AED VOL: 0
+;PCODE: $00000AEE VOL: 0
+; 0000 061F delay_ms(500);
+;PCODE: $00000AEF VOL: 0
+;PCODE: $00000AF0 VOL: 0
+;PCODE: $00000AF1 VOL: 0
+; 0000 0620 glcd_clear();
+;PCODE: $00000AF2 VOL: 0
+; 0000 0621 delay_ms(500);
+;PCODE: $00000AF3 VOL: 0
+;PCODE: $00000AF4 VOL: 0
+;PCODE: $00000AF5 VOL: 0
+; 0000 0622 glcd_putbmp(picture);
+;PCODE: $00000AF6 VOL: 0
+;PCODE: $00000AF7 VOL: 0
+;PCODE: $00000AF8 VOL: 0
+; 0000 0623 while (GlcdBusy)
+;PCODE: $00000AF9 VOL: 0
+;PCODE: $00000AFA VOL: 0
+;PCODE: $00000AFB VOL: 0
+;PCODE: $00000AFC VOL: 0
+;PCODE: $00000AFD VOL: 0
+; 0000 0624 {
+; 0000 0625     #asm("cli")
+;PCODE: $00000AFE VOL: 0
+	cli
+;PCODE: $00000AFF VOL: 0
+; 0000 0626     lcd_gotoxy(15,1);
+;PCODE: $00000B00 VOL: 0
+;PCODE: $00000B01 VOL: 0
+;PCODE: $00000B02 VOL: 0
+;PCODE: $00000B03 VOL: 0
+;PCODE: $00000B04 VOL: 0
+; 0000 0627     lcd_putchar('Y');
+;PCODE: $00000B05 VOL: 0
+;PCODE: $00000B06 VOL: 0
+;PCODE: $00000B07 VOL: 0
+; 0000 0628     #asm("sei")
+;PCODE: $00000B08 VOL: 0
+	sei
+;PCODE: $00000B09 VOL: 0
+; 0000 0629     delay_ms(100);
+;PCODE: $00000B0A VOL: 0
+;PCODE: $00000B0B VOL: 0
+;PCODE: $00000B0C VOL: 0
+; 0000 062A     #asm("cli")
+;PCODE: $00000B0D VOL: 0
+	cli
+;PCODE: $00000B0E VOL: 0
+; 0000 062B     lcd_gotoxy(15,1);
+;PCODE: $00000B0F VOL: 0
+;PCODE: $00000B10 VOL: 0
+;PCODE: $00000B11 VOL: 0
+;PCODE: $00000B12 VOL: 0
+;PCODE: $00000B13 VOL: 0
+; 0000 062C     lcd_putchar('X');
+;PCODE: $00000B14 VOL: 0
+;PCODE: $00000B15 VOL: 0
+;PCODE: $00000B16 VOL: 0
+; 0000 062D     #asm("sei")
+;PCODE: $00000B17 VOL: 0
+	sei
+;PCODE: $00000B18 VOL: 0
+; 0000 062E     delay_ms(100);
+;PCODE: $00000B19 VOL: 0
+;PCODE: $00000B1A VOL: 0
+;PCODE: $00000B1B VOL: 0
+; 0000 062F }
+;PCODE: $00000B1C VOL: 0
+;PCODE: $00000B1D VOL: 0
+; 0000 0630 lcd_clear();
+;PCODE: $00000B1E VOL: 0
+; 0000 0631 lcd_gotoxy(0,1);
+;PCODE: $00000B1F VOL: 0
+;PCODE: $00000B20 VOL: 0
+;PCODE: $00000B21 VOL: 0
+;PCODE: $00000B22 VOL: 0
+;PCODE: $00000B23 VOL: 0
+; 0000 0632 lcd_putsf("Finished!");
+;PCODE: $00000B24 VOL: 0
+;PCODE: $00000B25 VOL: 0
+;PCODE: $00000B26 VOL: 0
+;PCODE: $00000B27 VOL: 0
+; 0000 0633 
+; 0000 0634 // Global enable interrupts
+; 0000 0635 #asm("sei")
+;PCODE: $00000B28 VOL: 0
+	sei
+;PCODE: $00000B29 VOL: 0
+; 0000 0636 
+; 0000 0637 while (1)
+;PCODE: $00000B2A VOL: 0
+; 0000 0638       {
+; 0000 0639       // Place your code here
+; 0000 063A 
+; 0000 063B       }
+;PCODE: $00000B2B VOL: 0
+;PCODE: $00000B2C VOL: 0
+; 0000 063C }
+;PCODE: $00000B2D VOL: 0
+;PCODE: $00000B2E VOL: 0
+;PCODE: $00000B2F VOL: 0
+;PCODE: $00000B30 VOL: 0

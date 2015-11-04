@@ -1,0 +1,46 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+glcd_data_address                                                 0x0160       2
+glcd_rs_address                                                   0x0162       2
+glcd_rs_bit_pos                                                   0x0164       1
+glcd_rw_address                                                   0x0165       2
+glcd_rw_bit_pos                                                   0x0167       1
+glcd_en_address                                                   0x0168       2
+glcd_en_bit_pos                                                   0x016A       1
+glcd_cs1_address                                                  0x016B       2
+glcd_cs1_bit_pos                                                  0x016D       1
+glcd_cs2_address                                                  0x016E       2
+glcd_cs2_bit_pos                                                  0x0170       1
+glcd_rst_address                                                  0x0171       2
+glcd_rst_bit_pos                                                  0x0173       1
+CaseAddress                                                       0x0174      66
+CaseStack                                                         0x01B6      10
+GlcdColumn                                                        0x01C0       1
+GlcdDataByte                                                      0x01C1       1
+GlcdChar                                                          0x01C2       1
+GlcdString                                                        0x01C3       2
+GlcdFlashString                                                   0x01C5       2
+GlcdFlashPointer                                                  0x01C7       2
+i                                                                 0x01C9       1
+j                                                                 0x01CA       2
+TCCR0_value                                                       0x01CC       1
+_base_y                                                           0x01CD       4
+_lcd_x                                                            0x01D1       1
+_lcd_y                                                            0x01D2       1
+_lcd_maxx                                                         0x01D3       1
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+CaseAddressIndex                                                  R2,R3        2
+timer_interrupt_enable                                            R4,R5        2
+timer_interrupt_disable                                           R6,R7        2
+set_delay_7us                                                     R8,R9        2
+set_delay_10ms                                                    R10,R11      2
+StackPointer                                                      R13          1
+GlcdPage                                                          R12          1

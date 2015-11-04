@@ -1,0 +1,748 @@
+#include <string.h>
+#ifndef _ATXMEGA_DEVICE_
+#include <iobits.h>
+#endif
+
+// Global Variables
+static unsigned char *glcd_data_address;
+static unsigned char *glcd_rs_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_rs_bit_msk;
+#else
+static unsigned char glcd_rs_bit_pos;
+#endif
+static unsigned char *glcd_rw_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_rw_bit_msk;
+#else
+static unsigned char glcd_rw_bit_pos;
+#endif
+static unsigned char *glcd_en_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_en_bit_msk;
+#else
+static unsigned char glcd_en_bit_pos;
+#endif
+static unsigned char *glcd_cs1_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_cs1_bit_msk;
+#else
+static unsigned char glcd_cs1_bit_pos;
+#endif
+static unsigned char *glcd_cs2_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_cs2_bit_msk;
+#else
+static unsigned char glcd_cs2_bit_pos;
+#endif
+static unsigned char *glcd_rst_address;
+#ifdef _ATXMEGA_DEVICE_
+static unsigned char glcd_rst_bit_msk;
+#else
+static unsigned char glcd_rst_bit_pos;
+#endif
+
+flash char glcd_font [91][6] =
+{
+    { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // sp
+    { 0x00, 0x00, 0x5F, 0x00, 0x00, 0x00 },   // !
+    { 0x00, 0x00, 0x5F, 0x00, 0x00, 0x00 },   // "
+    { 0x14, 0x7F, 0x14, 0x7F, 0x14, 0x00 },   // #
+    { 0x24, 0x2A, 0x7F, 0x2A, 0x12, 0x00 },   // $
+    { 0x23, 0x13, 0x08, 0x64, 0x62, 0x00 },   // %
+    { 0x36, 0x49, 0x55, 0x22, 0x50, 0x00 },   // &
+    { 0x00, 0x05, 0x03, 0x00, 0x00, 0x00 },   // '
+    { 0x00, 0x1C, 0x22, 0x41, 0x00, 0x00 },   // (
+    { 0x00, 0x41, 0x22, 0x1C, 0x00, 0x00 },   // )
+    { 0x08, 0x2A, 0x1C, 0x2A, 0x08, 0x00 },   // *
+    { 0x08, 0x08, 0x3E, 0x08, 0x08, 0x00 },   // +
+    { 0x00, 0x50, 0x30, 0x00, 0x00, 0x00 },   // ,
+    { 0x08, 0x08, 0x08, 0x08, 0x08, 0x00 },   // -
+    { 0x00, 0x30, 0x30, 0x00, 0x00, 0x00 },   // .
+    { 0x20, 0x10, 0x08, 0x04, 0x02, 0x00 },   // /
+    { 0x3E, 0x51, 0x49, 0x45, 0x3E, 0x00 },   // 0
+    { 0x00, 0x42, 0x7F, 0x40, 0x00, 0x00 },   // 1
+    { 0x42, 0x61, 0x51, 0x49, 0x46, 0x00 },   // 2
+    { 0x21, 0x41, 0x45, 0x4B, 0x31, 0x00 },   // 3
+    { 0x18, 0x14, 0x12, 0x7F, 0x10, 0x00 },   // 4
+    { 0x27, 0x45, 0x45, 0x45, 0x39, 0x00 },   // 5
+    { 0x3C, 0x4A, 0x49, 0x49, 0x30, 0x00 },   // 6
+    { 0x01, 0x71, 0x09, 0x05, 0x03, 0x00 },   // 7
+    { 0x36, 0x49, 0x49, 0x49, 0x36, 0x00 },   // 8
+    { 0x06, 0x49, 0x49, 0x29, 0x1E, 0x00 },   // 9
+    { 0x00, 0x36, 0x36, 0x00, 0x00, 0x00 },   // :
+    { 0x00, 0x56, 0x36, 0x00, 0x00, 0x00 },   // ;
+    { 0x00, 0x08, 0x14, 0x22, 0x41, 0x00 },   // <
+    { 0x14, 0x14, 0x14, 0x14, 0x14, 0x00 },   // =
+    { 0x41, 0x22, 0x14, 0x08, 0x00, 0x00 },   // >
+    { 0x02, 0x01, 0x51, 0x09, 0x06, 0x00 },   // ?
+    { 0x32, 0x49, 0x79, 0x41, 0x3E, 0x00 },   // @
+    { 0x7E, 0x11, 0x11, 0x11, 0x7E, 0x00 },   // A
+    { 0x7F, 0x49, 0x49, 0x49, 0x36, 0x00 },   // B
+    { 0x3E, 0x41, 0x41, 0x41, 0x22, 0x00 },   // C
+    { 0x7F, 0x41, 0x41, 0x22, 0x1C, 0x00 },   // D
+    { 0x7F, 0x49, 0x49, 0x49, 0x41, 0x00 },   // E
+    { 0x7F, 0x09, 0x09, 0x01, 0x01, 0x00 },   // F
+    { 0x3E, 0x41, 0x41, 0x51, 0x32, 0x00 },   // G
+    { 0x7F, 0x08, 0x08, 0x08, 0x7F, 0x00 },   // H
+    { 0x00, 0x41, 0x7F, 0x41, 0x00, 0x00 },   // I
+    { 0x20, 0x40, 0x41, 0x3F, 0x01, 0x00 },   // J
+    { 0x7F, 0x08, 0x14, 0x22, 0x41, 0x00 },   // K
+    { 0x7F, 0x40, 0x40, 0x40, 0x40, 0x00 },   // L
+    { 0x7F, 0x02, 0x04, 0x02, 0x7F, 0x00 },   // M
+    { 0x7F, 0x04, 0x08, 0x10, 0x7F, 0x00 },   // N
+    { 0x3E, 0x41, 0x41, 0x41, 0x3E, 0x00 },   // O
+    { 0x7F, 0x09, 0x09, 0x09, 0x06, 0x00 },   // P
+    { 0x3E, 0x41, 0x51, 0x21, 0x5E, 0x00 },   // Q
+    { 0x7F, 0x09, 0x19, 0x29, 0x46, 0x00 },   // R
+    { 0x46, 0x49, 0x49, 0x49, 0x31, 0x00 },   // S
+    { 0x01, 0x01, 0x7F, 0x01, 0x01, 0x00 },   // T
+    { 0x3F, 0x40, 0x40, 0x40, 0x3F, 0x00 },   // U
+    { 0x1F, 0x20, 0x40, 0x20, 0x1F, 0x00 },   // V
+    { 0x7F, 0x20, 0x18, 0x20, 0x7F, 0x00 },   // W
+    { 0x63, 0x14, 0x08, 0x14, 0x63, 0x00 },   // X
+    { 0x03, 0x04, 0x78, 0x04, 0x03, 0x00 },   // Y
+    { 0x61, 0x51, 0x49, 0x45, 0x43, 0x00 },   // Z
+    { 0x00, 0x00, 0x7F, 0x41, 0x41, 0x00 },   // [
+    { 0x02, 0x04, 0x08, 0x10, 0x20, 0x00 },   // 55
+    { 0x41, 0x41, 0x7F, 0x00, 0x00, 0x00 },   // ]
+    { 0x04, 0x02, 0x01, 0x02, 0x04, 0x00 },   // ^
+    { 0x40, 0x40, 0x40, 0x40, 0x40, 0x00 },   // _
+    { 0x00, 0x01, 0x02, 0x04, 0x00, 0x00 },   // '
+    { 0x20, 0x54, 0x54, 0x54, 0x78, 0x00 },   // a
+    { 0x7F, 0x48, 0x44, 0x44, 0x38, 0x00 },   // b
+    { 0x38, 0x44, 0x44, 0x44, 0x20, 0x00 },   // c
+    { 0x38, 0x44, 0x44, 0x48, 0x7F, 0x00 },   // d
+    { 0x38, 0x54, 0x54, 0x54, 0x18, 0x00 },   // e
+    { 0x08, 0x7E, 0x09, 0x01, 0x02, 0x00 },   // f
+    { 0x08, 0x14, 0x54, 0x54, 0x3C, 0x00 },   // g
+    { 0x7F, 0x08, 0x04, 0x04, 0x78, 0x00 },   // h
+    { 0x00, 0x44, 0x7D, 0x40, 0x00, 0x00 },   // i
+    { 0x20, 0x40, 0x44, 0x3D, 0x00, 0x00 },   // j
+    { 0x00, 0x7F, 0x10, 0x28, 0x44, 0x00 },   // k
+    { 0x00, 0x41, 0x7F, 0x40, 0x00, 0x00 },   // l
+    { 0x7C, 0x04, 0x18, 0x04, 0x78, 0x00 },   // m
+    { 0x7C, 0x08, 0x04, 0x04, 0x78, 0x00 },   // n
+    { 0x38, 0x44, 0x44, 0x44, 0x38, 0x00 },   // o
+    { 0x7C, 0x14, 0x14, 0x14, 0x08, 0x00 },   // p
+    { 0x08, 0x14, 0x14, 0x18, 0x7C, 0x00 },   // q
+    { 0x7C, 0x08, 0x04, 0x04, 0x08, 0x00 },   // r
+    { 0x48, 0x54, 0x54, 0x54, 0x20, 0x00 },   // s
+    { 0x04, 0x3F, 0x44, 0x40, 0x20, 0x00 },   // t
+    { 0x3C, 0x40, 0x40, 0x20, 0x7C, 0x00 },   // u
+    { 0x1C, 0x20, 0x40, 0x20, 0x1C, 0x00 },   // v
+    { 0x3C, 0x40, 0x30, 0x40, 0x3C, 0x00 },   // w
+    { 0x44, 0x28, 0x10, 0x28, 0x44, 0x00 },   // x
+    { 0x0C, 0x50, 0x50, 0x50, 0x3C, 0x00 },   // y
+    { 0x44, 0x64, 0x54, 0x4C, 0x44, 0x00 }    // z
+};
+
+// Bit Control
+#ifdef _ATXMEGA_DEVICE_
+#define set_rs  *(glcd_rs_address  + 0x01) = glcd_rs_bit_msk
+#define set_rw  *(glcd_rw_address  + 0x01) = glcd_rw_bit_msk
+#define set_en  *(glcd_en_address  + 0x01) = glcd_en_bit_msk
+#define set_cs1 *(glcd_cs1_address + 0x01) = glcd_cs1_bit_msk
+#define set_cs2 *(glcd_cs2_address + 0x01) = glcd_cs2_bit_msk
+#define set_rst *(glcd_rst_address + 0x01) = glcd_rst_bit_msk
+#define clr_rs  *(glcd_rs_address  + 0x02) = glcd_rs_bit_msk
+#define clr_rw  *(glcd_rw_address  + 0x02) = glcd_rw_bit_msk
+#define clr_en  *(glcd_en_address  + 0x02) = glcd_en_bit_msk
+#define clr_cs1 *(glcd_cs1_address + 0x02) = glcd_cs1_bit_msk
+#define clr_cs2 *(glcd_cs2_address + 0x02) = glcd_cs2_bit_msk
+#define clr_rst *(glcd_rst_address + 0x02) = glcd_rst_bit_msk
+#define tgl_rs  *(glcd_rs_address  + 0x03) = glcd_rs_bit_msk
+#define tgl_rw  *(glcd_rw_address  + 0x03) = glcd_rw_bit_msk
+#define tgl_en  *(glcd_en_address  + 0x03) = glcd_en_bit_msk
+#define tgl_cs1 *(glcd_cs1_address + 0x03) = glcd_cs1_bit_msk
+#define tgl_cs2 *(glcd_cs2_address + 0x03) = glcd_cs2_bit_msk
+#define tgl_rst *(glcd_rst_address + 0x03) = glcd_rst_bit_msk
+#else
+#define set_rs  SETBIT(*glcd_rs_address, glcd_rs_bit_pos)
+#define set_rw  SETBIT(*glcd_rw_address, glcd_rw_bit_pos)
+#define set_en  SETBIT(*glcd_en_address, glcd_en_bit_pos)
+#define set_cs1 SETBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+#define set_cs2 SETBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+#define set_rst SETBIT(*glcd_rst_address,glcd_rst_bit_pos)
+#define clr_rs  CLRBIT(*glcd_rs_address, glcd_rs_bit_pos)
+#define clr_rw  CLRBIT(*glcd_rw_address, glcd_rw_bit_pos)
+#define clr_en  CLRBIT(*glcd_en_address, glcd_en_bit_pos)
+#define clr_cs1 CLRBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+#define clr_cs2 CLRBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+#define clr_rst CLRBIT(*glcd_rst_address,glcd_rst_bit_pos)
+#define tgl_rs  TGLBIT(*glcd_rs_address, glcd_rs_bit_pos)
+#define tgl_rw  TGLBIT(*glcd_rw_address, glcd_rw_bit_pos)
+#define tgl_en  TGLBIT(*glcd_en_address, glcd_en_bit_pos)
+#define tgl_cs1 TGLBIT(*glcd_cs1_address,glcd_cs1_bit_pos)
+#define tgl_cs2 TGLBIT(*glcd_cs2_address,glcd_cs2_bit_pos)
+#define tgl_rst TGLBIT(*glcd_rst_address,glcd_rst_bit_pos)
+#endif
+
+// External (user's) functions
+void glcd_define (unsigned char *glcd_data_port_address,
+                  unsigned char *glcd_rs_port_address,  unsigned char glcd_rs_pin,
+                  unsigned char *glcd_rw_port_address,  unsigned char glcd_rw_pin,
+                  unsigned char *glcd_en_port_address,  unsigned char glcd_en_pin,
+                  unsigned char *glcd_cs1_port_address, unsigned char glcd_cs1_pin,
+                  unsigned char *glcd_cs2_port_address, unsigned char glcd_cs2_pin,
+                  unsigned char *glcd_rst_port_address, unsigned char glcd_rst_pin)
+{
+  glcd_data_address = glcd_data_port_address;
+  glcd_rs_address   = glcd_rs_port_address;
+  glcd_rw_address   = glcd_rw_port_address;
+  glcd_en_address   = glcd_en_port_address;
+  glcd_cs1_address  = glcd_cs1_port_address;
+  glcd_cs2_address  = glcd_cs2_port_address;
+  glcd_rst_address  = glcd_rst_port_address;
+#ifdef _ATXMEGA_DEVICE_
+  glcd_rs_bit_msk  = 0b00000001 << glcd_rs_pin;
+  glcd_rw_bit_msk  = 0b00000001 << glcd_rw_pin;
+  glcd_en_bit_msk  = 0b00000001 << glcd_en_pin;
+  glcd_cs1_bit_msk = 0b00000001 << glcd_cs1_pin;
+  glcd_cs2_bit_msk = 0b00000001 << glcd_cs2_pin;
+  glcd_rst_bit_msk = 0b00000001 << glcd_rst_pin;
+  // Set all the pins as output
+  *(glcd_data_address - 0x03) = 0xFF;
+  *(glcd_rs_address - 0x03)   = glcd_rs_bit_msk;
+  clr_rw;
+  *(glcd_rw_address - 0x03)   = glcd_rw_bit_msk;
+  *(glcd_en_address - 0x03)   = glcd_en_bit_msk;
+  *(glcd_cs1_address - 0x03)  = glcd_cs1_bit_msk;
+  *(glcd_cs2_address - 0x03)  = glcd_cs2_bit_msk;
+  *(glcd_rst_address - 0x03)  = glcd_rst_bit_msk;
+#else
+  glcd_rs_bit_pos  = glcd_rs_pin;
+  glcd_rw_bit_pos  = glcd_rw_pin;
+  glcd_en_bit_pos  = glcd_en_pin;
+  glcd_cs1_bit_pos = glcd_cs1_pin;
+  glcd_cs2_bit_pos = glcd_cs2_pin;
+  glcd_rst_bit_pos = glcd_rst_pin;
+  // Sets the pins as output
+  *(glcd_data_address - 1) = 0xFF;
+  SETBIT (*(glcd_rs_address - 0x01),glcd_rs_bit_pos);
+  SETBIT (*(glcd_rw_address - 0x01),glcd_rw_bit_pos);
+  clr_rw;
+  SETBIT (*(glcd_en_address - 0x01),glcd_en_bit_pos);
+  SETBIT (*(glcd_cs1_address - 0x01),glcd_cs1_bit_pos);
+  SETBIT (*(glcd_cs2_address - 0x01),glcd_cs2_bit_pos);
+  SETBIT (*(glcd_rst_address - 0x01),glcd_rst_bit_pos);
+#endif
+}
+
+#define STACK_SIZE  6
+
+void nop_function (void)
+{
+  
+}
+
+// Timer function pointers
+void (*timer_interrupt_enable) (void);
+
+void (*timer_interrupt_disable) (void);
+
+void (*set_delay_7us) (void);
+
+void (*set_delay_10ms) (void);
+
+//static void (*function_stack[FUNCTION_POINTER_STACK_SIZE])(void);
+//static unsigned char 
+void (*function_stack[STACK_SIZE])();
+unsigned char function_status[STACK_SIZE];
+#if FUNCTION_POINTER_STACK_SIZE < 256
+static unsigned char stack_pointer = 0xFF;
+#else
+static unsigned int stack_pointer = 0xFFFF;
+#endif
+static unsigned char timer_7us_isr_status = 0;
+
+void push (void (*function_pointer)(void), unsigned char status)
+{
+	stack_pointer++;
+    function_status[stack_pointer] = status;
+	function_stack[stack_pointer] = function_pointer;
+    return;
+}
+
+void (*run_function (void)) ()
+{
+  if (stack_pointer != ~0)
+    return function_stack[stack_pointer];
+  else
+    return ((void (*)())(nop_function));
+}
+
+unsigned char pull_void (void)
+{
+    function_status[stack_pointer] = 0x00;
+    stack_pointer--;
+	return;
+}
+
+// GLCD busy check function
+inline unsigned char glcd_status (void)
+{
+  return ((unsigned char)(stack_pointer < STACK_SIZE));
+}
+
+// delay function couple
+void glcd_timer_isr (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  function_status[stack_pointer] = 2;
+	  (*timer_interrupt_enable)();
+	  return;
+	  break;
+	case 2:
+	  (*timer_interrupt_disable)();
+	  pull_void ();
+	  (*run_function())();
+	  return;
+	  break;
+  }
+}
+
+void delay (void)
+{
+  push(((void (*)())(glcd_timer_isr)), 0x01);
+  glcd_timer_isr();
+}
+
+// GLCD lock and unlock enable pin function couple
+void glcd_unlock_lock_void (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  (*set_delay_7us)();
+	  function_status[stack_pointer] = 2;
+	  delay();
+	  return;
+	  break;
+	case 2:
+	  set_en;
+	  function_status[stack_pointer] = 3;
+	  delay();
+	  return;
+	  break;
+	case 3:
+	  clr_en;
+	  pull_void ();
+	  (*run_function())();
+	  return;
+  }
+}
+
+void glcd_unlock_lock (void)
+{
+  push(((void (*)())(glcd_unlock_lock_void)), 0x01);
+  glcd_unlock_lock_void();
+}
+
+// GLCD initializing function couple
+void glcd_init_void (void)
+{
+  static unsigned char i;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  i = 0;
+	  clr_rst;
+	  (*set_delay_10ms)();
+	  function_status[stack_pointer] = 2;
+	  delay();
+	  return;
+	  break;
+	case 2:
+	  set_rst;
+	  function_status[stack_pointer] = 3;
+	  delay();
+	  return;
+	  break;
+	case 3:
+	  clr_rs;
+	  clr_cs1;
+	  set_cs2;
+	  *glcd_data_address = 0x3E;
+	  function_status[stack_pointer] = 4;
+	  glcd_unlock_lock();
+	  return;
+	  break;
+	case 4:
+      *glcd_data_address = 0x40;
+	  function_status[stack_pointer] = 5;
+      glcd_unlock_lock();
+	  return;
+	  break;
+	case 5:
+      *glcd_data_address = 0xB8;
+	  function_status[stack_pointer] = 6;
+      glcd_unlock_lock();
+	  return;
+	  break;
+	case 6:
+	  *glcd_data_address = 0x3F;
+	  i++;
+	  if (i < 2)
+	    function_status[stack_pointer] = 7;
+	  else
+        function_status[stack_pointer] = 8;
+      glcd_unlock_lock();
+	  return;
+	  break;
+	case 7:
+	  tgl_cs1;
+	  tgl_cs2;
+	  *glcd_data_address = 0x3E;
+	  function_status[stack_pointer] = 4;
+      glcd_unlock_lock();
+	  return;
+	  break;
+	case 8:
+	  pull_void();
+	  (*run_function())();
+	  return;
+	  break;
+  }
+}
+
+void glcd_init (void)
+{
+  push(((void (*)())(glcd_init_void)), 0x01);
+  glcd_init_void ();
+}
+
+// GLCD write byte in specific column and page function couple
+unsigned char glcd_writebyte_clmn, glcd_writebyte_pg, glcd_writebyte_data;
+void glcd_writebyte_void (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  if(glcd_writebyte_clmn >= 64)
+      {
+        clr_cs1;
+        set_cs2;
+      }
+      else
+      {
+        set_cs1;
+        clr_cs2;
+      }
+      clr_rs;
+      clr_rw;
+      *glcd_data_address = 0xB8 | glcd_writebyte_pg;
+	  function_status[stack_pointer] = 2;
+	  glcd_unlock_lock();
+	  return;
+	  break;
+    case 2:
+	  clr_rs;
+      clr_rw;
+      *glcd_data_address = 0x40 | glcd_writebyte_clmn;
+	  function_status[stack_pointer] = 3;
+	  glcd_unlock_lock();
+	  return;
+	  break;
+    case 3:
+	  set_rs;
+      clr_rw;
+      *glcd_data_address = glcd_writebyte_data;
+	  function_status[stack_pointer] = 4;
+      glcd_unlock_lock();
+	  return;
+	  break;
+	case 4:
+	  pull_void();
+	  (*run_function())();
+	  return;
+	  break;
+  }
+}
+
+void glcd_writebyte (unsigned char clmn, unsigned char pg, unsigned char data)
+{
+  glcd_writebyte_clmn = clmn;
+  glcd_writebyte_pg   = pg;
+  glcd_writebyte_data = data;
+  push(((void (*)())(glcd_writebyte_void)), 0x01);
+  glcd_writebyte_void ();
+}
+
+// GLCD clear page function couple
+unsigned char glcd_clear_page_page;
+void glcd_clear_page_void (void)
+{
+  static unsigned char i;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+      i = 0;
+	  function_status[stack_pointer] = 2;
+	  glcd_writebyte(0, glcd_clear_page_page, 0x00);
+	  return;
+      break;
+	case 2:
+	  i++;
+	  if (i < 128)
+	    glcd_writebyte(i, glcd_clear_page_page, 0x00);
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+      }
+	  return;
+	  break;
+  }
+}
+
+void glcd_clear_page (unsigned char page)
+{
+  glcd_clear_page_page = page;
+  push(((void (*)())(glcd_clear_page_void)), 0x01);
+  glcd_clear_page_void();
+}
+
+// GLCD put character function couple
+unsigned char glcd_putchar_column, glcd_putchar_page, glcd_putchar_ch;
+void glcd_putchar_void (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    static unsigned char i;
+    case 1:
+	  i = 0;
+	  glcd_putchar_ch -= 32;
+	  function_status[stack_pointer] = 2;
+	  glcd_writebyte (glcd_putchar_column, glcd_putchar_page, glcd_font[glcd_putchar_ch][0]);
+	  return;
+	  break;
+	case 2:
+	  i++;
+	  if (i < 6)
+	  {
+	    glcd_putchar_column++;
+		glcd_writebyte (glcd_putchar_column, glcd_putchar_page, glcd_font[glcd_putchar_ch][i]);
+	  }
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+	  }
+	  return;
+	  break;
+  }
+}
+
+void glcd_putchar (unsigned char column, unsigned char page, unsigned char ch)
+{
+  glcd_putchar_column = column;
+  glcd_putchar_page = page;
+  glcd_putchar_ch = ch;
+  push(((void (*)())(glcd_putchar_void)),0x01);
+  glcd_putchar_void();
+}
+
+// GLCD put string function couple
+unsigned char glcd_puts_column, glcd_puts_page;
+unsigned char *glcd_puts_str;
+void glcd_puts_void (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  if (*glcd_puts_str)
+	  {
+	    glcd_putchar(glcd_puts_column, glcd_puts_page, *glcd_puts_str++);
+		glcd_puts_column += 6;
+	  }
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+	  }
+	  return;
+	  break;
+  }
+}
+
+void glcd_puts (unsigned char column, unsigned char page, unsigned char *str)
+{
+  glcd_puts_column = column;
+  glcd_puts_page = page;
+  glcd_puts_str = str;
+  push(((void (*)())(glcd_puts_void)), 0x01);
+  glcd_puts_void();
+}
+
+// GLCD put string in center function couple
+unsigned char glcd_puts_center_page;
+unsigned char *glcd_puts_center_str;
+void glcd_puts_center_void (void)
+{
+  static unsigned char i;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+      i = (unsigned char) strlen(glcd_puts_center_str);
+	  i = (128 - i * 6) / 2;
+	  function_status[stack_pointer] = 2;
+	  glcd_puts(i, glcd_puts_center_page, glcd_puts_center_str);
+	  return;
+	  break;
+	case 2:
+	  pull_void();
+	  (*run_function())();
+	  return;
+	  break;
+  }
+}
+
+void glcd_puts_center (unsigned char page, unsigned char *str)
+{
+  glcd_puts_center_page = page;
+  glcd_puts_center_str = str;
+  push(((void (*)())(glcd_puts_center_void)), 0x01);
+  glcd_puts_center_void();
+}
+
+// GLCD put flash string function couple
+unsigned char glcd_putsf_column, glcd_putsf_page;
+flash unsigned char *glcd_putsf_str;
+void glcd_putsf_void (void)
+{
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  if (*glcd_putsf_str)
+	  {
+	    glcd_putchar(glcd_putsf_column, glcd_putsf_page, *glcd_putsf_str++);
+		glcd_putsf_column += 6;
+	  }
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+	  }
+	  return;
+	  break;
+  }
+}
+
+void glcd_putsf (unsigned char column, unsigned char page, flash unsigned char *str)
+{
+  glcd_putsf_column = column;
+  glcd_putsf_page = page;
+  glcd_putsf_str = str;
+  push(((void (*)())(glcd_putsf_void)), 0x01);
+  glcd_putsf_void();
+}
+
+// GLCD put flash string in center function couple
+unsigned char glcd_putsf_center_page;
+flash unsigned char *glcd_putsf_center_str;
+void glcd_putsf_center_void (void)
+{
+  static unsigned char i;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+      i = (unsigned char) strlenf(glcd_putsf_center_str);
+	  i = (128 - i * 6) / 2;
+	  function_status[stack_pointer] = 2;
+	  glcd_putsf(i, glcd_putsf_center_page, glcd_putsf_center_str);
+	  return;
+	  break;
+	case 2:
+	  pull_void();
+	  (*run_function())();
+	  return;
+	  break;
+  }
+}
+
+void glcd_putsf_center (unsigned char page, flash unsigned char *str)
+{
+  glcd_putsf_center_page = page;
+  glcd_putsf_center_str = str;
+  push(((void (*)())(glcd_putsf_center_void)), 0x01);
+  glcd_putsf_center_void();
+}
+
+// GLCD clear function couple
+void glcd_clear_void (void)
+{
+  static unsigned char i, j;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  i = 0;
+	  j = 0;
+	  function_status[stack_pointer] = 2;
+	  glcd_writebyte (0, 0, 0x00);
+	  return;
+	  break;
+	case 2:
+	  if (((i == 7) && (j < 127)) || (i < 7))
+	  {
+	    j++;
+		if (j == 128)
+		{
+		  j = 0;
+		  i++;
+		}
+		glcd_writebyte(j, i, 0x00);
+	  }
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+	  }
+	  return;
+	  break;
+  }
+}
+
+void glcd_clear (void)
+{
+  push(((void (*)())(glcd_clear_void)), 0x01);
+  glcd_clear_void();
+}
+// GLCD put bitmap function couple
+flash unsigned char *glcd_putbmp_bmp;
+void glcd_putbmp_void (void)
+{
+  static unsigned int i;
+  switch (function_status[stack_pointer])
+  {
+    case 1:
+	  i = 0;
+	  function_status[stack_pointer] = 2;
+	  glcd_writebyte(0 ,0 , *glcd_putbmp_bmp);
+	  return;
+	  break;
+	case 2:
+	  i++;
+	  if (i < 1024)
+	    glcd_writebyte(((unsigned char)(i % 128)),((unsigned char)(i / 128)),*(glcd_putbmp_bmp + i));
+	  else
+	  {
+	    pull_void();
+		(*run_function())();
+	  }
+	  return;
+	  break;
+  }
+}
+
+void glcd_putbmp (flash unsigned char *bmp)
+{
+  glcd_putbmp_bmp = bmp;
+  push(((void (*)())(glcd_putbmp_void)), 0x01);
+  glcd_putbmp_void ();
+}
+
+//#message Remember to assign proper functions to timer_interrupt_enable, timer_interrupt_disable, set_delay_7us & set_delay_10ms pointers
+//#message Remember to use glcd_timer_isr in a proper interrupt routine

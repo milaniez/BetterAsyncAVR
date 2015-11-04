@@ -1,0 +1,56 @@
+RAM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+timer_interrupt_enable                                            0x0160       2
+timer_interrupt_disable                                           0x0162       2
+set_delay_7us                                                     0x0164       2
+set_delay_10ms                                                    0x0166       2
+glcd_free_fcn                                                     0x0168       2
+glcd_data_address                                                 0x016A       2
+glcd_rs_address                                                   0x016C       2
+glcd_rs_bit_pos                                                   0x016E       1
+glcd_rw_address                                                   0x016F       2
+glcd_rw_bit_pos                                                   0x0171       1
+glcd_en_address                                                   0x0172       2
+glcd_en_bit_pos                                                   0x0174       1
+glcd_cs1_address                                                  0x0175       2
+glcd_cs1_bit_pos                                                  0x0177       1
+glcd_cs2_address                                                  0x0178       2
+glcd_cs2_bit_pos                                                  0x017A       1
+glcd_rst_address                                                  0x017B       2
+glcd_rst_bit_pos                                                  0x017D       1
+function_stack                                                    0x017E      12
+function_status                                                   0x018A       6
+stack_pointer                                                     0x0190       1
+i_S100000A000                                                     0x0191       1
+i_S1000010001                                                     0x0192       1
+glcd_puts_str                                                     0x0193       2
+glcd_puts_center_page                                             0x0195       1
+glcd_puts_center_str                                              0x0196       2
+glcd_putsf_column                                                 0x0198       1
+glcd_putsf_page                                                   0x0199       1
+glcd_putsf_str                                                    0x019A       2
+glcd_putsf_center_page                                            0x019C       1
+glcd_putsf_center_str                                             0x019D       2
+i_S100001A000                                                     0x019F       1
+j_S100001A000                                                     0x01A0       1
+glcd_putbmp_bmp                                                   0x01A1       2
+i_S100001C000                                                     0x01A3       2
+
+EEPROM Allocation
+Variable                                                          Address   Size
+--------------------------------------------------------------------------------
+
+Register Allocation
+Variable                                                          Register  Size
+--------------------------------------------------------------------------------
+TCCR0_value                                                       R5           1
+glcd_writebyte_clmn                                               R4           1
+glcd_writebyte_pg                                                 R7           1
+glcd_writebyte_data                                               R6           1
+glcd_clear_page_page                                              R9           1
+glcd_putchar_column                                               R8           1
+glcd_putchar_page                                                 R11          1
+glcd_putchar_ch                                                   R10          1
+glcd_puts_column                                                  R13          1
+glcd_puts_page                                                    R12          1
